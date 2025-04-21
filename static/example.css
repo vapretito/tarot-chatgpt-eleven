@@ -1,0 +1,526 @@
+* {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+html,
+body {
+  height: 100%;
+}
+body {
+  background-image: url('deck/mesa.png'); /* Imagen para desktop */
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-position: center center;
+  background-attachment: fixed;
+}
+
+/* ✅ Para celulares (pantallas de 768px o menos) */
+@media (max-width: 768px) {
+  body {
+    background-image: url('deck/mesa.png'); /* Imagen optimizada vertical */
+    background-size: cover;
+    background-position: center top;
+  }
+}
+
+
+#container {
+  position: fixed;
+  top: calc(50% + 1.5rem);
+  left: 50%;
+  -webkit-transform: translate3d(-50%, -50%, 0);
+  -moz-transform: translate3d(-50%, -50%, 0);
+  -o-transform: translate3d(-50%, -50%, 0);
+  -ms-transform: translate3d(-50%, -50%, 0);
+  transform: translate3d(-50%, -50%, 0);
+}
+#topbar {
+  position: fixed;
+  top: 0; /* Agrega esto si no estaba */
+  left: 0;
+  width: 100%;
+  padding: 0.25rem;
+  background-color: #24120544;
+  text-align: center;
+  transition: all 0.5s ease; /* Necesario para animar top/transform */
+  z-index: 100;
+}
+
+#topbar.startup {
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 0.5rem;
+  border-radius: 12px;
+  background-color: rgba(36, 18, 5, 0.6);
+  box-shadow: 0 4px 10px rgba(0,0,0,0.4);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow-x: auto;
+  flex-direction: row;
+  justify-content: flex-start;
+  width: 30vw;
+  max-height: 120px;
+  white-space: nowrap;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  cursor: grabbing !important;
+}
+#topbar.startup::after {
+  position: absolute;
+  right: -2rem;
+  top: 50%;
+  transform: translateY(-50%) rotate(90deg);
+  color: white;
+  font-size: 0.75rem;
+  opacity: 0.5;
+  animation: blink 1.5s infinite;
+  pointer-events: none;
+  writing-mode: vertical-rl;
+  text-align: center;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 1; }
+}
+
+#topbar.active {
+  top: 0;
+  left: 0;
+  transform: none;
+  width: 100%;
+  padding: 0.25rem;
+  border-radius: 0;
+  background-color: #24120544;
+  flex-direction: row;
+  justify-content: center;
+  gap: 0.5rem;
+}
+#topbar button {
+  background: none;
+  border: 1px solid rgba(255,255,255,0.5);
+  outline: none;
+  margin: 0.1rem;
+  padding: 0.4rem;
+  font: inherit;
+  font-size: 0.75rem;
+  line-height: 1;
+  color: rgba(255,255,255,0.85);
+  cursor: pointer;
+}
+#topbar.startup button {
+  scroll-snap-align: center;
+  min-width: 100px;
+  height: 80px;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 10px;
+  background-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
+  transition: transform 0.3s ease, background-color 0.3s ease;
+}
+#topbar.startup button:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+  transform: scale(1.05);
+}
+#topbar button:hover {
+  background-color: #fff;
+  color: #444;
+}
+#topbar.dragging {
+  cursor: grabbing;
+  box-shadow: 0 0 20px rgba(255,255,255,0.15);
+
+}
+#topbar.startup {
+  cursor: grab;
+}
+#topbar.startup::-webkit-scrollbar {
+  height: 8px;
+}
+
+#topbar.startup::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+#topbar.startup::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.1); /* similar al fondo del topbar */
+  border-radius: 4px;
+}
+
+#topbar.startup::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* Firefox */
+#topbar.startup {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255,255,255,0.1) transparent;
+}
+
+.message {
+  position: fixed;
+  top: 2.5rem;
+  left: 0;
+  width: 100%;
+  padding: 1rem 0.5rem;
+  font-size: 0.5rem;
+  text-align: center;
+}
+.card {
+  position: absolute;
+  display: inline-block;
+  left: -3.5rem;
+  top: -6rem;
+  width: 7rem;
+  height: 12rem; /* ajustado para reflejar 70mm x 120mm */
+  background-color: #fff;
+  border-radius: 16px;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+  cursor: default;
+  will-change: transform;
+}
+
+
+.card:before,
+.card:after {
+  position: absolute;
+  font-size: 0.7rem;
+  text-align: center;
+  line-height: 0.7rem;
+  font-family: 'Ubuntu Condensed', sans-serif;
+  white-space: pre-line;
+  width: 0.55rem;
+  letter-spacing: -0.1rem;
+}
+.card:before {
+  top: 0.15rem;
+  left: 0;
+}
+.card:after {
+  bottom: 0.1rem;
+  right: 0;
+  -webkit-transform: rotate(180deg);
+  -moz-transform: rotate(180deg);
+  -o-transform: rotate(180deg);
+  -ms-transform: rotate(180deg);
+  transform: rotate(180deg);
+}
+.card .face {
+  height: 100%;
+  background-position: 50% 50%;
+  -webkit-background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  background-size: 100% 100%;
+  border-radius: 10px; /* <-- aquí el cambio */
+
+  background-repeat: no-repeat;
+}
+.card .back {
+  position: absolute;
+  background-image: url("tarot/back 1.png");
+  background-position: 50% 50%;
+  -webkit-background-size: 100% 100%;
+  -moz-background-size: 100% 100%;
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  border-radius: 10px; /* <-- aquí el cambio */
+
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+}
+.card.spades,
+.card.clubs,
+.card.joker {
+  color: #000;
+}
+.card.hearts,
+.card.diamonds,
+.card.joker.rank3 {
+  color: #d40000;
+}
+.card.joker.rank1:before,
+.card.joker.rank2:before,
+.card.joker.rank3:before,
+.card.joker.rank1:after,
+.card.joker.rank2:after,
+.card.joker.rank3:after {
+  content: "J\a O\a K\a E\a R";
+  letter-spacing: 0;
+  font-size: 0.4rem;
+  line-height: 0.4rem;
+  padding: 0.15rem 0.05rem;
+  width: 0.5rem;
+}
+.card.rank1:before,
+/* .card.rank1:after {
+  content: "";
+}
+.card.rank2:before,
+.card.rank2:after {
+  content: "2";
+}
+.card.rank3:before,
+.card.rank3:after {
+  content: "3";
+}
+.card.rank4:before,
+.card.rank4:after {
+  content: "4";
+}
+.card.rank5:before,
+.card.rank5:after {
+  content: "5";
+}
+.card.rank6:before,
+.card.rank6:after {
+  content: "6";
+}
+.card.rank7:before,
+.card.rank7:after {
+  content: "7";
+}
+.card.rank8:before,
+.card.rank8:after {
+  content: "8";
+}
+.card.rank9:before,
+.card.rank9:after {
+  content: "9";
+}
+.card.rank10:before,
+.card.rank10:after {
+  content: "10";
+}
+.card.rank11:before,
+.card.rank11:after {
+  content: "J";
+}
+.card.rank12:before,
+.card.rank12:after {
+  content: "Q";
+}
+.card.rank13:before,
+.card.rank13:after {
+  content: "K";
+} */
+.card.spades.rank1 .face {
+  background-image: url("tarot/RWSa-T-00.png");
+}
+.card.spades.rank2 .face {
+  background-image: url("tarot/RWSa-T-01.png");
+}
+.card.spades.rank3 .face {
+  background-image: url("tarot/RWSa-T-02.png");
+}
+.card.spades.rank4 .face {
+  background-image: url("tarot/RWSa-T-03.png");
+}
+.card.spades.rank5 .face {
+  background-image: url("tarot/RWSa-T-04.png");
+}
+.card.spades.rank6 .face {
+  background-image: url("tarot/RWSa-T-05.png");
+}
+.card.spades.rank7 .face {
+  background-image: url("tarot/RWSa-T-06.png");
+}
+.card.spades.rank8 .face {
+  background-image: url("tarot/RWSa-T-07.png");
+}
+.card.spades.rank9 .face {
+  background-image: url("tarot/RWSa-T-08.png");
+}
+.card.spades.rank10 .face {
+  background-image: url("tarot/RWSa-T-09.png");
+}
+.card.spades.rank11 .face {
+  background-image: url("tarot/RWSa-T-10.png");
+}
+.card.spades.rank12 .face {
+  background-image: url("tarot/RWSa-T-11.png");
+}
+.card.spades.rank13 .face {
+  background-image: url("tarot/RWSa-T-12.png");
+}
+.card.hearts.rank1 .face {
+  background-image: url("tarot/RWSa-T-13.png");
+}
+.card.hearts.rank2 .face {
+  background-image: url("tarot/RWSa-T-14.png");
+}
+.card.hearts.rank3 .face {
+  background-image: url("tarot/RWSa-T-15.png");
+}
+.card.hearts.rank4 .face {
+  background-image: url("tarot/RWSa-T-16.png");
+}
+.card.hearts.rank5 .face {
+  background-image: url("tarot/RWSa-T-17.png");
+}
+.card.hearts.rank6 .face {
+  background-image: url("tarot/RWSa-T-18.png");
+}
+.card.hearts.rank7 .face {
+  background-image: url("tarot/RWSa-T-19.png");
+}
+.card.hearts.rank8 .face {
+  background-image: url("tarot/RWSa-T-20.png");
+}
+.card.hearts.rank9 .face {
+  background-image: url("tarot/RWSa-T-21.png");
+}
+.card.hearts.rank10 .face {
+  background-image: url("tarot/RWSa-P-0A.png");
+}
+.card.hearts.rank11 .face {
+  background-image: url("tarot/RWSa-P-02.png");
+}
+.card.hearts.rank12 .face {
+  background-image: url("tarot/RWSa-P-03.png");
+}
+.card.hearts.rank13 .face {
+  background-image: url("tarot/RWSa-P-04.png");
+}
+.card.clubs.rank1 .face {
+  background-image: url("tarot/RWSa-P-05.png");
+}
+.card.clubs.rank2 .face {
+  background-image: url("tarot/RWSa-P-06.png");
+}
+.card.clubs.rank3 .face {
+  background-image: url("tarot/RWSa-P-07.png");
+}
+.card.clubs.rank4 .face {
+  background-image: url("tarot/RWSa-P-08.png");
+}
+.card.clubs.rank5 .face {
+  background-image: url("tarot/RWSa-P-09.png");
+}
+.card.clubs.rank6 .face {
+  background-image: url("tarot/RWSa-P-10.png");
+}
+.card.clubs.rank7 .face {
+  background-image: url("tarot/RWSa-P-J1.png");
+}
+.card.clubs.rank8 .face {
+  background-image: url("tarot/RWSa-P-J2.png");
+}
+.card.clubs.rank9 .face {
+  background-image: url("tarot/RWSa-P-KI.png");
+}
+.card.clubs.rank10 .face {
+  background-image: url("tarot/RWSa-P-QU.png");
+}
+.card.clubs.rank11 .face {
+  background-image: url("tarot/RWSa-W-0A.png");
+}
+.card.clubs.rank12 .face {
+  background-image: url("tarot/RWSa-W-02.png");
+}
+.card.clubs.rank13 .face {
+  background-image: url("tarot/RWSa-W-03.png");
+}
+.card.diamonds.rank1 .face {
+  background-image: url("tarot/RWSa-W-04.png");
+}
+.card.diamonds.rank2 .face {
+  background-image: url("tarot/RWSa-W-05.png");
+}
+.card.diamonds.rank3 .face {
+  background-image: url("tarot/RWSa-W-06.png");
+}
+.card.diamonds.rank4 .face {
+  background-image: url("tarot/RWSa-W-07.png");
+}
+.card.diamonds.rank5 .face {
+  background-image: url("tarot/RWSa-W-08.png");
+}
+.card.diamonds.rank6 .face {
+  background-image: url("tarot/RWSa-W-09.png");
+}
+.card.diamonds.rank7 .face {
+  background-image: url("tarot/RWSa-W-10.png");
+}
+.card.diamonds.rank8 .face {
+  background-image: url("tarot/RWSa-W-J1.png");
+}
+.card.diamonds.rank9 .face {
+  background-image: url("tarot/RWSa-W-J2.png");
+}
+.card.diamonds.rank10 .face {
+  background-image: url("tarot/RWSa-W-KI.png");
+}
+.card.diamonds.rank11 .face {
+  background-image: url("tarot/RWSa-W-QU.png");
+}
+.card.diamonds.rank12 .face {
+  background-image: url("tarot/3_12.png");
+}
+.card.diamonds.rank13 .face {
+  background-image: url("tarot/3_13.svg");
+}
+.card.joker.rank1 .face {
+  background-image: url("tarot/4_1.svg");
+}
+.card.joker.rank2 .face {
+  background-image: url("tarot/4_2.svg");
+}
+.card.joker.rank3 .face {
+  background-image: url("tarot/4_3.svg");
+}
+@media (max-width: 540px) {
+  #topbar {
+    text-align: left;
+  }
+  .gh-ribbon {
+    -webkit-transform: scale(0.5);
+    -moz-transform: scale(0.5);
+    -o-transform: scale(0.5);
+    -ms-transform: scale(0.5);
+    transform: scale(0.5);
+    -webkit-transform-origin: 100% 0;
+    -moz-transform-origin: 100% 0;
+    -o-transform-origin: 100% 0;
+    -ms-transform-origin: 100% 0;
+    transform-origin: 100% 0;
+  }
+}
+@media (min-width: 640px) {
+  html {
+    font-size: 125%;
+  }
+}
+@media (max-width: 540px) {
+  .card {
+    left: -2rem;
+    top: -3.5rem;
+    width: 4.5rem;
+    height: 7.5rem;
+    border-radius: 12px;
+  }
+
+  .card:before,
+  .card:after {
+    font-size: 0.5rem;
+    line-height: 0.5rem;
+    width: 0.45rem;
+    letter-spacing: -0.05rem;
+  }
+
+  .card .face,
+  .card .back {
+    border-radius: 8px;
+  }
+  
+}

@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>HTML5 Deck of Cards</title>
+    <link href="{{ url_for('static', filename='example.css') }}" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,600|Ubuntu+Condensed" rel="stylesheet" type="text/css">
+  </head>
+  <body>
+    <audio id="musica-fondo" loop autoplay>
+      <source src="{{ url_for('static', filename='musica-fondo.mp3') }}" type="audio/mpeg">
+      Tu navegador no soporta audio HTML.
+    </audio>
+
+    <script>
+      function cerrarModal() {
+      const modal = document.getElementById("modal-instrucciones");
+      modal.style.display = "none";
+    
+
+    
+      mostrarSeleccionSesion();
+    }
+    
+    function cambiarIdioma(idioma) {
+      idiomaSeleccionado = idioma; // <--- Guardamos globalmente
+    
+      const texto = document.getElementById("modal-texto");
+      const contenedor = document.getElementById("elevenlabs-widget-container");
+      const audio = document.getElementById("audio-bienvenida");
+    
+      // Cambiamos la fuente del audio según idioma
+      if (idioma === "en") {
+        
+        texto.innerHTML = `
+          Discover the mysteries of tarot. As you enter, a mystical deck awaits you.<br><br>
+        `;
+      } else {
+        texto.innerHTML = `
+          Explora los misterios del tarot. Al ingresar, verás un mazo místico esperándote.<br><br>
+        `;
+      }
+    
+      if (typeof window.ElevenLabsConvai !== "undefined") {
+        window.ElevenLabsConvai.render();
+      }
+    
+      document.getElementById("boton-comenzar").style.display = "inline-block";
+    }
+        
+      </script>
+
+<script>
+  const music = document.getElementById("musica-fondo");
+
+  // Establece el volumen desde el inicio
+  music.volume = 0.01;
+
+  // Algunos navegadores requieren interacción del usuario para reproducir audio
+  window.addEventListener('click', () => {
+    music.volume = 0.09; // volumen súper bajo
+    music.play().catch((e) => console.warn("🎵 Error al reproducir música:", e));
+  }, { once: true });
+  
+</script>
+    
+    <div id="container"></div>
+    
+  <!-- Modal instrucciones -->
+  <div id="modal-instrucciones" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-image: url('mesa.png'); background-size: cover; background-position: center; z-index: 9999; display: flex; align-items: center; justify-content: center; padding: 20px;">
+    <div style="
+    max-width: 650px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    background: rgba(245, 222, 179, 0.93);
+    border: 2px solid #8b5c2d;
+    border-radius: 12px;
+    padding: 40px 30px;
+    text-align: center;
+    box-shadow: 0 0 25px rgba(0,0,0,0.6);
+    font-family: 'Open Sans', serif;
+    color: #2f1e0c;
+    backdrop-filter: blur(2px);
+  ">
+        <h2 style="font-family: 'Ubuntu Condensed', sans-serif; font-size: 28px; margin-bottom: 20px;">
+        🔮 Tarot
+      </h2>
+      <div style="margin-bottom: 20px;">
+        <span style="font-size: 14px; font-weight: bold; color: #4b2e17;">🌍 Idioma:</span>
+        <button onclick="cambiarIdioma('es')" style="margin-left: 10px; background: none; border: none; cursor: pointer;" title="Español">
+          <img src="https://flagcdn.com/w40/es.png" alt="ES" style="height: 20px; border-radius: 3px;">
+        </button>
+        <button onclick="cambiarIdioma('en')" style="margin-left: 5px; background: none; border: none; cursor: pointer;" title="English">
+          <img src="https://flagcdn.com/w40/us.png" alt="US" style="height: 20px; border-radius: 3px;">
+        </button>
+        <p id="mensaje-idioma" style="margin-top: 10px; font-size: 14px; color: #b33939; display: block;">
+          👉 Selecciona un idioma para comenzar./Select a language to get started.
+        </p>
+        
+        
+      </div>
+      <p id="modal-texto" style="margin-top: 10px; font-size: 18px; line-height: 1.5;">
+        Explora los misterios del tarot. Al ingresar, verás un mazo místico esperándote.<br><br>
+      </p>
+      <button id="boton-comenzar" onclick="cerrarModal()" style="display: none; margin-top: 25px; background: #8b5c2d; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: background 0.3s ease;" onmouseover="this.style.background='#a56a3a'" onmouseout="this.style.background='#8b5c2d'">
+        ✨ Comenzar
+      </button>
+      <div id="mensaje-mistico" style="margin-top: 15px; font-style: italic; color: #6a0dad; animation: parpadeo 1s infinite;">
+        🧙‍♀️ “...”
+      </div>
+      
+      <style>
+      @keyframes parpadeo {
+        0% { opacity: 1; }
+        50% { opacity: 0.3; }
+        100% { opacity: 1; }
+      }
+      </style>
+
+    </div>
+  </div>
+  <div id="modal-sesion" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9998; display: flex; align-items: center; justify-content: center;">
+    <div style="background: #f4e7d4; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.6); max-width: 500px; width: 90%;">
+      <h2 style="margin-bottom: 20px;">✨ Elige el tipo de sesión</h2>
+      <button onclick="saltarIntro()" style="margin-top: 15px; background: #444; color: white; padding: 8px 18px; border-radius: 8px; font-size: 14px; cursor: pointer;">
+        ⏭️ Saltar Intro / Skip Intro
+      </button>
+      <button onclick="elegirSesion('virtual')" style="margin: 10px; padding: 12px 24px; font-size: 18px; border: none; border-radius: 8px; background: #7a5195; color: white; cursor: pointer;">🔮 Virtual</button>
+      <button onclick="elegirSesion('presencial')" style="margin: 10px; padding: 12px 24px; font-size: 18px; border: none; border-radius: 8px; background: #ef476f; color: white; cursor: pointer;">🏠 Presencial</button>
+    </div>
+  </div>
+  
+  <!-- Modos según la sesión -->
+  <div id="modal-modo" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 9997; display: flex; align-items: center; justify-content: center;">
+    <div id="opciones-modo" style="background: #eae2b7; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.6); max-width: 500px; width: 90%;">
+      <h2 style="margin-bottom: 20px;">🔮 Elige tu modo</h2>
+      <div id="botones-modos"></div>
+    </div>
+  </div>
+    <div id="topbar"></div><a href="https://github.com/pakastin/deck-of-cards"><img class="gh-ribbon" style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/52760788cde945287fbb584134c4cbc2bc36f904/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f77686974655f6666666666662e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"></a>
+    <script src="{{ url_for('static', filename='deck_tarot_cleaned.js') }}"></script>
+<script src="{{ url_for('static', filename='example.js') }}"></script>
+
+<script>
+    
+  function mostrarSeleccionSesion() {
+    document.getElementById("modal-sesion").style.display = "flex";
+  }
+
+  function elegirSesion(tipo) {
+    document.getElementById("modal-sesion").style.display = "none";
+    document.getElementById("modal-modo").style.display = "flex";
+
+    const botones = document.getElementById("botones-modos");
+    botones.innerHTML = "";
+
+    if (tipo === "virtual") {
+      botones.innerHTML += `<button onclick="seleccionarModo('fan')" style="margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; background: #118ab2; color: white;">🃏 Fan</button>`;
+      botones.innerHTML += `<button onclick="seleccionarModo('prueba')" style="margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; background: #06d6a0; color: white;">🔍 Prueba</button>`;
+    } else {
+      botones.innerHTML += `<button onclick="seleccionarModo('all')" style="margin: 10px; padding: 10px 20px; font-size: 16px; border-radius: 8px; background: #ffd166; color: black;">📚 Modo All</button>`;
+    }
+  }
+
+  function seleccionarModo(modo) {
+document.getElementById("modal-modo").style.display = "none";
+window.modoSeleccionado = modo;
+console.log("✅ Modo elegido:", modo);
+
+// Ejecutar el modo desde los botones reales del mazo
+switch (modo) {
+case 'fan':
+  [...document.querySelectorAll('button')].find(btn => btn.textContent === 'Fan')?.click();
+  break;
+case 'prueba':
+  [...document.querySelectorAll('button')].find(btn => btn.textContent === 'Prueba')?.click();
+  break;
+case 'all':
+  [...document.querySelectorAll('button')].find(btn => btn.textContent === 'All')?.click();
+  break;
+}
+
+}
+
+
+
+  function saltarIntro() {
+const audio = document.getElementById("audio-bienvenida");
+audio.pause();
+audio.currentTime = 0;
+
+const canvas = document.getElementById("visualizador");
+canvas.style.display = "none";
+const ctx = canvas.getContext("2d");
+ctx.clearRect(0, 0, canvas.width, canvas.height);
+}
+
+</script>
+
+    
+  </body>
+</html>
