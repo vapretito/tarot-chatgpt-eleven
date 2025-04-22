@@ -26,23 +26,35 @@ def respuesta():
 
     data = request.json
     prompt = data.get("texto", "Hola")
+    idioma = data.get("idioma", "es")
 
-    # 🕐 Inicio total
-    total_start = time.time()
+    # Mensaje de sistema según idioma
+    if idioma == "en":
+        system_prompt = (
+            "You are a mystical tarot master with a calm and wise voice. "
+            "Speak with clarity and poetic depth, interpreting each card as a whisper from the cosmos. "
+            "Your words should feel ancient and powerful, like messages carried through time."
+        )
+        voice_id = "51YRucvcq5ojp2byev44"  # ElevenLabs: Rachel por ejemplo
+    else:
+        system_prompt = (
+            "Eres un maestro tarotista de voz sabia y ancestral. Hablas con serenidad, como si las palabras "
+            "fluyeran desde un conocimiento profundo del alma humana. Cada interpretación de carta debe sentirse "
+            "como un susurro del universo, revelando verdades ocultas con calma, claridad y misticismo."
+        )
+        voice_id = "51YRucvcq5ojp2byev44"  # Tu voz en español
 
     # 🧠 ChatGPT
-    start_chat = time.time()
     chat_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
-        messages=[{"role": "user", "content": prompt}],
-        
+        messages=[
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": prompt}
+        ]
     )
     texto = chat_response.choices[0].message.content
-    end_chat = time.time()
-    print(f"🧠 ChatGPT respondió en {end_chat - start_chat:.2f} segundos")
 
     # 🔊 ElevenLabs TTS
-    start_tts = time.time()
     headers = {
         "xi-api-key": elevenlabs_api_key,
         "Content-Type": "application/json"
@@ -52,19 +64,13 @@ def respuesta():
         "voice_settings": {"stability": 0.4, "similarity_boost": 0.75},
         "model_id": "eleven_monolingual_v1"
     }
-    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
+    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
     tts_response = requests.post(tts_url, headers=headers, json=tts_data)
-    end_tts = time.time()
-    print(f"🔊 ElevenLabs generó audio en {end_tts - start_tts:.2f} segundos")
-
-    # 🧾 Total
-    total_end = time.time()
-    print(f"✅ Tiempo total: {total_end - total_start:.2f} segundos")
 
     return send_file(io.BytesIO(tts_response.content), mimetype="audio/mpeg")
 
-# if __name__ == "__main__":
-#     app.run(debug=True, port=5000)
+
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)

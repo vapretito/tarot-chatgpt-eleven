@@ -14,6 +14,14 @@ var Deck = (function () {
     "El Diablo", "La Torre", "La Estrella", "La Luna", "El Sol", "El Juicio", "El Mundo"
   ];
   
+  const nombresCartasEN = [
+    "The Fool", "The Magician", "The High Priestess", "The Empress", "The Emperor",
+    "The Hierophant", "The Lovers", "The Chariot", "Justice", "The Hermit",
+    "Wheel of Fortune", "Strength", "The Hanged Man", "Death", "Temperance",
+    "The Devil", "The Tower", "The Star", "The Moon", "The Sun", "Judgement", "The World"
+  ];
+
+
   function animationFrames(delay, duration) {
     var now = Date.now();
 
@@ -190,6 +198,8 @@ var Deck = (function () {
 
     // add default transform
     $el.style[transform] = translate(-z + 'px', -z + 'px');
+    $el.setAttribute("data-index", i); // ✅ importante para que tryFlip funcione
+
 
     // add default values
     self.x = -z;
@@ -249,6 +259,7 @@ var Deck = (function () {
         onComplete && onComplete();
       });
       $el.setAttribute("data-value", nombresCartas[i] || `Carta ${i}`);
+      
 
     };
 
@@ -879,8 +890,12 @@ var Deck = (function () {
             flipped = true;
         
             // Guardamos la carta seleccionada
-            const carta = _card6.$el.getAttribute("data-value") || "Carta desconocida";
-            window.clickedCards.push(_card6); // Guarda el objeto de carta
+            const cartaIndex = parseInt(_card6.$el.getAttribute("data-index"), 10);
+            window.clickedCards.push({
+            index: cartaIndex,
+             carta: _card6
+             });
+
         
             window.cardsFlipped++;
         
@@ -892,22 +907,25 @@ var Deck = (function () {
         
             // Cuando se eligen las 3, enviamos la interpretación completa
             if (window.cardsFlipped === 3 && !window.mensajeEnviado) {
-              window.mensajeEnviado = true; // 🔒 Marca para no enviar más veces
-        
+              window.mensajeEnviado = true;
               bloquearCartasRestantes();
-        
-              // 🧠 Construimos el texto completo
-              const [c1, c2, c3] = window.clickedCards;
-              const texto = `Interpretación de la lectura del tarot:\nPasado: ${c1.$el.getAttribute("data-value")}\nPresente: ${c2.$el.getAttribute("data-value")}\nFuturo: ${c3.$el.getAttribute("data-value")}`;
-
-        
-              // 🎙️ Enviar al backend
+            
+              const idioma = window.idiomaSeleccionado || "es";
+              const [c1, c2, c3] = window.clickedCards; // 🔥 Esta línea es clave
+            
+              const nombres = idioma === "en" ? nombresCartasEN : nombresCartas;
+              const texto = idioma === "en"
+                ? `Tarot reading interpretation:\nPast: ${nombres[c1.index]}\nPresent: ${nombres[c2.index]}\nFuture: ${nombres[c3.index]}`
+                : `Interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
+            
+              console.log("🧠 Texto enviado a GPT:", texto);
+            
               fetch("/respuesta", {
                 method: "POST",
                 headers: {
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ texto })
+                body: JSON.stringify({ texto, idioma })
               })
                 .then(res => res.blob())
                 .then(blob => {
