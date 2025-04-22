@@ -10,7 +10,7 @@ body {
   height: 100%;
 }
 body {
-  background-image: url('deck/mesa.png'); /* Imagen para desktop */
+  background-image: url('deck/mesa1.png'); /* Imagen para desktop */
   background-size: cover;
   background-repeat: no-repeat;
   background-position: center center;
@@ -20,7 +20,7 @@ body {
 /* ✅ Para celulares (pantallas de 768px o menos) */
 @media (max-width: 768px) {
   body {
-    background-image: url('deck/mesa.png'); /* Imagen optimizada vertical */
+    background-image: url('deck/mesa1.png'); /* Imagen optimizada vertical */
     background-size: cover;
     background-position: center top;
   }
