@@ -25,7 +25,8 @@
     
     function cambiarIdioma(idioma) {
       idiomaSeleccionado = idioma; // <--- Guardamos globalmente
-    
+      const nombre = document.getElementById("nombre-usuario").value.trim();
+      window.nombreUsuario = nombre || "Consultante"; // Si no escribe nada, usamos un nombre por defecto
       const texto = document.getElementById("modal-texto");
       const contenedor = document.getElementById("elevenlabs-widget-container");
       const audio = document.getElementById("audio-bienvenida");
@@ -47,6 +48,9 @@
       }
     
       document.getElementById("boton-comenzar").style.display = "inline-block";
+
+
+     
     }
         
       </script>
@@ -89,6 +93,8 @@
       </h2>
       <div style="margin-bottom: 20px;">
         <span style="font-size: 14px; font-weight: bold; color: #4b2e17;">🌍 Idioma:</span>
+        
+
         <button onclick="cambiarIdioma('es')" style="margin-left: 10px; background: none; border: none; cursor: pointer;" title="Español">
           <img src="https://flagcdn.com/w40/es.png" alt="ES" style="height: 20px; border-radius: 3px;">
         </button>
@@ -99,7 +105,8 @@
           👉 Selecciona un idioma para comenzar./Select a language to get started.
         </p>
         
-        
+        <input type="text" id="nombre-usuario" placeholder="Tu nombre.../ Your name..." 
+        style="margin-top: 10px; padding: 8px; width: 80%; font-size: 16px; border-radius: 6px; border: 1px solid #ccc;">
       </div>
       <p id="modal-texto" style="margin-top: 10px; font-size: 18px; line-height: 1.5;">
         Explora los misterios del tarot. Al ingresar, verás un mazo místico esperándote.<br><br>

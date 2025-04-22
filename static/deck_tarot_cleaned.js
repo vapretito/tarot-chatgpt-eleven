@@ -912,11 +912,13 @@ var Deck = (function () {
             
               const idioma = window.idiomaSeleccionado || "es";
               const [c1, c2, c3] = window.clickedCards; // 🔥 Esta línea es clave
-            
+              const nombre = window.nombreUsuario || "Consultante";
+
               const nombres = idioma === "en" ? nombresCartasEN : nombresCartas;
               const texto = idioma === "en"
-                ? `Tarot reading interpretation:\nPast: ${nombres[c1.index]}\nPresent: ${nombres[c2.index]}\nFuture: ${nombres[c3.index]}`
-                : `Interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
+               ? `My name is ${nombre} and I want to know the tarot reading interpretation:\nPast: ${nombres[c1.index]}\nPresent: ${nombres[c2.index]}\nFuture: ${nombres[c3.index]}`
+               : `Mi nombre es ${nombre} y quiero saber la interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
+
             
               console.log("🧠 Texto enviado a GPT:", texto);
             
