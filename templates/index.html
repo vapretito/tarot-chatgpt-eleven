@@ -24,34 +24,30 @@
     }
     
     function cambiarIdioma(idioma) {
-      idiomaSeleccionado = idioma; // <--- Guardamos globalmente
-      const nombre = document.getElementById("nombre-usuario").value.trim();
-      window.nombreUsuario = nombre || "Consultante"; // Si no escribe nada, usamos un nombre por defecto
-      const texto = document.getElementById("modal-texto");
-      const contenedor = document.getElementById("elevenlabs-widget-container");
-      const audio = document.getElementById("audio-bienvenida");
-    
-      // Cambiamos la fuente del audio según idioma
-      if (idioma === "en") {
-        
-        texto.innerHTML = `
-          Discover the mysteries of tarot. As you enter, a mystical deck awaits you.<br><br>
-        `;
-      } else {
-        texto.innerHTML = `
-          Explora los misterios del tarot. Al ingresar, verás un mazo místico esperándote.<br><br>
-        `;
-      }
-    
-      if (typeof window.ElevenLabsConvai !== "undefined") {
-        window.ElevenLabsConvai.render();
-      }
-    
-      document.getElementById("boton-comenzar").style.display = "inline-block";
+  idiomaSeleccionado = idioma;
+  const nombre = document.getElementById("nombre-usuario").value.trim();
+  window.nombreUsuario = nombre || "Consultante";
 
+  const texto = document.getElementById("modal-texto");
 
-     
-    }
+  if (idioma === "en") {
+    texto.innerHTML = `
+      Discover the mysteries of tarot. As you enter, a mystical deck awaits you.<br><br>
+    `;
+    document.body.style.backgroundImage = "url('static/deck/mesa3.0en.png')";
+  } else {
+    texto.innerHTML = `
+      Explora los misterios del tarot. Al ingresar, verás un mazo místico esperándote.<br><br>
+    `;
+    document.body.style.backgroundImage = "url('static/deck/mesa3.0esp.png')";
+  }
+
+  if (typeof window.ElevenLabsConvai !== "undefined") {
+    window.ElevenLabsConvai.render();
+  }
+
+  document.getElementById("boton-comenzar").style.display = "inline-block";
+}
         
       </script>
 
