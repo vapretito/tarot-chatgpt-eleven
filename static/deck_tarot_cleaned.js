@@ -660,32 +660,54 @@ var Deck = (function () {
   var __fontSize;
 
   var poker = {
-
-    deck: function deck(_deck4) {
-      _deck4.poker = _deck4.queued(poker);
+    deck: function deck(_deck) {
+      _deck.poker = _deck.queued(poker);
   
       function poker(next) {
-        const cards = _deck4.cards;
-        const cardsToShow = 3;
+        const cards = _deck.cards;
+        const cardsToShow = 10;
         __fontSize = fontSize();
   
-        const labels = ["Pasado", "Presente", "Futuro"];
+        const posiciones = [
+          { x: 0, y: 0 },           // 1. Presente
+          { x: 30, y: 0 },          // 2. Obstáculo (cruzada sobre la 1)
+          { x: 0, y: 100 },         // 3. Raíz
+          { x: -100, y: 0 },        // 4. Pasado reciente
+          { x: 100, y: 0 },         // 5. Lo que está por llegar
+          { x: 0, y: -100 },        // 6. Futuro cercano
+          { x: 200, y: -100 },      // 7. Consultante
+          { x: 200, y: -50 },       // 8. Entorno
+          { x: 200, y: 0 },         // 9. Esperanzas y miedos
+          { x: 200, y: 50 }         // 10. Resultado final
+        ];
   
-        cards.slice(-cardsToShow).reverse().forEach(function (card, i) {
-          card.poker(i, cardsToShow, function (i) {
-            card.setSide('front');
-            if (i === cardsToShow - 1) {
-              next();
+        cards.slice(-cardsToShow).forEach(function (card, i) {
+          const offsetX = posiciones[i].x * (__fontSize / 16);
+          const offsetY = posiciones[i].y * (__fontSize / 16);
+  
+          card.setSide('front');
+  
+          card.animateTo({
+            delay: i * 200,
+            duration: 400,
+            x: offsetX,
+            y: offsetY,
+            rot: 0,
+            onStart: function () {
+              card.$el.style.zIndex = 100 + i;
+            },
+            onComplete: function () {
+              if (i === cardsToShow - 1) next();
             }
-          }, labels); // ← ¡ahora sí dentro del forEach!
+          });
         });
       }
     },
   
-    card: function card(_card4) {
-      var $el = _card4.$el;
+    card: function card(_card) {
+      var $el = _card.$el;
   
-      _card4.poker = function (i, total, cb, labels) {
+      _card.poker = function (i, total, cb) {
         const delay = i * 250;
         const spacing = window.innerWidth < 480 ? 90 : 140;
         const fanAngle = 10;
@@ -694,7 +716,7 @@ var Deck = (function () {
         const offsetY = -280 * __fontSize / 16;
         const rotation = (i - (total - 1) / 2) * fanAngle;
   
-        _card4.animateTo({
+        _card.animateTo({
           delay: delay,
           duration: 350,
           x: offsetX,
@@ -704,32 +726,63 @@ var Deck = (function () {
             $el.style.zIndex = 100 + i;
           },
           onComplete: function () {
-            const label = document.createElement("div");
-            label.textContent = labels[i];
-            label.style.position = "absolute";
-            label.style.top = "105%";
-            label.style.left = "50%";
-            label.style.transform = "translateX(-50%)";
-            label.style.color = "white";
-            label.style.fontSize = "1rem";
-            label.style.textShadow = "0 0 5px black";
-            label.style.pointerEvents = "none";
-            label.style.fontWeight = "bold";
-            label.style.opacity = "0";
-            label.style.transition = "opacity 0.5s ease";
-            $el.appendChild(label);
-  
-            // Pequeño delay visual para efecto fade
-            setTimeout(() => {
-              label.style.opacity = "1";
-            }, 50);
-  
             cb(i);
           }
         });
       };
     }
   };
+
+// var cruzCelta = {
+//   deck: function deck(_deck) {
+//     _deck.cruzCelta = _deck.queued(cruzCelta);
+
+//     function cruzCelta(next) {
+//       const cards = _deck.cards;
+//       const cardsToShow = 10;
+//       __fontSize = fontSize();
+
+//       const posiciones = [
+//         { x: 0, y: 0 },           // 1. Presente
+//         { x: 30, y: 0 },          // 2. Obstáculo (cruzada sobre la 1)
+//         { x: 0, y: 100 },         // 3. Raíz
+//         { x: -100, y: 0 },        // 4. Pasado reciente
+//         { x: 100, y: 0 },         // 5. Lo que está por llegar
+//         { x: 0, y: -100 },        // 6. Futuro cercano
+//         { x: 200, y: -100 },      // 7. Consultante
+//         { x: 200, y: -50 },       // 8. Entorno
+//         { x: 200, y: 0 },         // 9. Esperanzas y miedos
+//         { x: 200, y: 50 }         // 10. Resultado final
+//       ];
+
+//       cards.slice(-cardsToShow).forEach(function (card, i) {
+//         const offsetX = posiciones[i].x * (__fontSize / 16);
+//         const offsetY = posiciones[i].y * (__fontSize / 16);
+
+//         card.setSide('front');
+
+//         card.animateTo({
+//           delay: i * 200,
+//           duration: 400,
+//           x: offsetX,
+//           y: offsetY,
+//           rot: 0,
+//           onStart: function () {
+//             card.$el.style.zIndex = 100 + i;
+//           },
+//           onComplete: function () {
+//             if (i === cardsToShow - 1) next();
+//           }
+//         });
+//       });
+//     }
+//   },
+
+//   card: function card(_card) {
+//     // No necesitas agregar nada especial en cada carta para esta tirada
+//   }
+// };
+
   var intro = {
     deck: function deck(_deck5) {
       _deck5.intro = _deck5.queued(intro);
