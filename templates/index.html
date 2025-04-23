@@ -22,26 +22,28 @@
     <audio id="audio-fan-en" src="{{ url_for('static', filename='modo_clasico_en.mp3') }}"></audio>
     
     <script>
-      function cerrarModal() {
+function cerrarModal() {
   const modal = document.getElementById("modal-instrucciones");
   modal.style.display = "none";
 
-  // Selecciona el idioma actual
   const audioIntro = document.getElementById("audio-intro");
   const audioSource = document.getElementById("audio-source");
 
-  // Establece el src del audio según el idioma
+  let archivo;
+
   if (idiomaSeleccionado === "en") {
+    archivo = "intro1_en.mp3";
     audioSource.src = "static/intro1_en.mp3";
   } else {
+    archivo = "intro1_esp.mp3";
     audioSource.src = "static/intro1_esp.mp3";
   }
 
-  // Recarga el audio y lo reproduce
   audioIntro.load();
-  audioIntro.play().catch(e => console.warn("🎙️ No se pudo reproducir el audio:", e));
+  audioIntro.play()
+    .then(() => mostrarSubtituloDesdeAudio(archivo))
+    .catch(e => console.warn("🎙️ No se pudo reproducir el audio:", e));
 
-  // Luego de reproducir, continuar con la selección de sesión
   audioIntro.addEventListener('ended', () => {
     mostrarSeleccionSesion();
   }, { once: true });
@@ -204,7 +206,36 @@
     <div id="topbar"></div><a href="https://github.com/pakastin/deck-of-cards"><img class="gh-ribbon" style="position: fixed; top: 0; right: 0; border: 0;" src="https://camo.githubusercontent.com/52760788cde945287fbb584134c4cbc2bc36f904/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f77686974655f6666666666662e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_white_ffffff.png"></a>
     <script src="{{ url_for('static', filename='deck_tarot_cleaned.js') }}"></script>
 <script src="{{ url_for('static', filename='example.js') }}"></script>
+<!-- 🔈 Botón parlante + subtítulo -->
+<!-- 🔈 Botón parlante -->
+<div id="audio-control" style="position: fixed; top: 20px; left: 20px; z-index: 10001;">
+  <button onclick="toggleMute()" id="mute-button" style="
+    background: none;
+    border: none;
+    font-size: 28px;
+    cursor: pointer;
+    color: white;
+    text-shadow: 0 0 4px black;">🔊</button>
+</div>
 
+<!-- ✅ Subtítulo centrado abajo -->
+<div id="subtitulo-audio" style="
+  position: fixed;
+  bottom: 8vh;
+  left: 50%;
+  transform: translateX(-50%);
+  background-color: rgba(0, 0, 0, 0.6);
+  padding: 10px 20px;
+  border-radius: 6px;
+  color: #fff3cd;
+  font-weight: bold;
+  font-size: 16px;
+  text-shadow: 0 0 4px black;
+  z-index: 99999;
+  display: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+"></div>
 <script>
  function elegirSesion(tipo) {
   document.getElementById("modal-sesion").style.display = "none";
@@ -226,15 +257,21 @@
 
   // 🔊 Reproducir audio de modo virtual (si es el caso)
   if (tipo === "virtual") {
-    const idioma = window.idiomaSeleccionado || "es";
-    const audio = idioma === "en"
-      ? document.getElementById("audio-virtual-en")
-      : document.getElementById("audio-virtual-es");
+  const idioma = window.idiomaSeleccionado || "es";
+  const archivo = idioma === "en"
+    ? "modo_virtual_en.mp3"
+    : "modo_virtual_esp.mp3";
 
-    if (audio) {
-      audio.play().catch(e => console.warn("🔇 No se pudo reproducir el audio virtual:", e));
-    }
+  const audio = document.getElementById(
+    idioma === "en" ? "audio-virtual-en" : "audio-virtual-es"
+  );
+
+  if (audio) {
+    audio.play()
+      .then(() => mostrarSubtituloDesdeAudio(archivo))
+      .catch(e => console.warn("🔇 No se pudo reproducir el audio virtual:", e));
   }
+}
 
   // 🔘 Renderizar botones
   const botones = document.getElementById("botones-modos");
@@ -255,8 +292,9 @@ function seleccionarModo(modo) {
   console.log("✅ Modo elegido:", modo);
 
   if (modo === 'clasico') {
-    document.getElementById("boton-shuffle").style.display = "block";
-  // 🔇 Detener cualquier audio previo que esté sonando
+  document.getElementById("boton-shuffle").style.display = "block";
+
+  // Detener audios anteriores...
   const audios = [
     document.getElementById("audio-intro"),
     document.getElementById("audio-virtual-en"),
@@ -264,7 +302,6 @@ function seleccionarModo(modo) {
     document.getElementById("audio-fan-en"),
     document.getElementById("audio-fan-es")
   ];
-
   audios.forEach(audio => {
     if (audio && !audio.paused) {
       audio.pause();
@@ -272,19 +309,24 @@ function seleccionarModo(modo) {
     }
   });
 
-  // 🎙️ Si elige modo Fan, reproducir explicación correspondiente
-  if (modo === 'clasico') {
-    const idioma = window.idiomaSeleccionado || 'es';
-    const audio = idioma === 'en'
-      ? document.getElementById("audio-fan-en")
-      : document.getElementById("audio-fan-es");
+  const idioma = window.idiomaSeleccionado || 'es';
+  const archivo = idioma === 'en'
+    ? "modo_clasico_en.mp3"
+    : "modo_clasico_esp1.mp3";
 
-    if (audio) {
-      window.audioFan = audio;
-      audio.volume = 0.9;
-      audio.play().catch(err => console.warn("🎙️ Error al reproducir explicación modo fan:", err));
-    }
+  const audio = document.getElementById(
+    idioma === 'en' ? "audio-fan-en" : "audio-fan-es"
+  );
+
+  if (audio) {
+    window.audioFan = audio;
+    audio.volume = 0.9;
+    audio.play()
+      .then(() => mostrarSubtituloDesdeAudio(archivo))
+      .catch(err => console.warn("🎙️ Error al reproducir explicación modo fan:", err));
   }
+}
+
 
   // 🃏 Ejecutar el modo real del mazo
   switch (modo) {
@@ -298,7 +340,7 @@ function seleccionarModo(modo) {
       [...document.querySelectorAll('button')].find(btn => btn.textContent === 'All')?.click();
       break;
   }}
-}
+
 
 
 
@@ -336,6 +378,140 @@ ctx.clearRect(0, 0, canvas.width, canvas.height);
   }
 </script>
 
+<script>
+  window.idiomaSeleccionado = "es";
+
+  const subtitulosAudios = {
+    "intro1_esp.mp3": `✨ Welcome to the Tarot Oracle. Here begins your journey into inner wisdom.
+
+You can choose between two reading modes: virtual and in-person.
+
+In virtual mode, you have two paths to explore:
+🔮 A classic 3-card spread, revealing your past, present, and future,
+🌟 Or a deeper reading — the Celtic Cross spread, ideal for more detailed insights.
+
+In in-person mode, all the cards will appear face up. Take your time to observe them carefully and let them speak to you.
+If you wish, you may interpret their messages on your own… or let the oracle guide you.
+
+Take a moment. Breathe deeply.
+Your destiny is about to be revealed…`,
+    "intro1_en.mp3": `✨ Bienvenido al Oráculo del Tarot. Aquí comienzas un viaje hacia el conocimiento interior.
+
+Puedes elegir entre dos modos de lectura: virtual y presencial.
+
+En el modo virtual, tienes dos formas de exploración:
+🔮 Una tirada clásica de 3 cartas, que revela el pasado, el presente y el futuro,
+🌟 O una tirada más profunda, el modo cruz celta, ideal para lecturas más detalladas.
+
+En el modo presencial, las cartas aparecerán boca arriba. Podrás observarlas con atención y dejarlas hablarte.
+Si lo deseas, puedes interpretar sus mensajes por tu cuenta, o dejar que el oráculo te guíe.
+
+Tómate un momento. Respira hondo. Tu destino está por revelarse...`,
+    "modo_virtual_esp.mp3": `Has elegido el modo virtual. En esta experiencia, puedes explorar el tarot a través de dos caminos:
+
+🔮 Una tirada clásica de 3 cartas, donde deberás desplegar tres naipes frente a ti. Cada una representa tu pasado, tu presente y tu futuro.
+
+🌀 O una tirada más profunda: la cruz celta. Ideal para una lectura más completa sobre tu situación actual y los caminos que se abren ante ti.
+
+Elige con calma... y deja que las cartas hablen.`,
+    "modo_virtual_en.mp3": `You have chosen the virtual mode. In this experience, you may explore the tarot through two paths:
+
+🔮 A classic 3-card spread, where you reveal three cards before you. They represent your past, your present, and your future.
+
+🌀 Or a deeper reading: the Celtic Cross. Ideal for gaining insight into your current situation and the paths that lie ahead.
+
+Take a moment... and let the cards speak.`,
+    "modo_clasico_esp1.mp3": `Has elegido el modo clasico.
+En este modo, todas las cartas del tarot se desplegarán boca abajo frente a ti.
+Puedes usar el botón  "Shuffle" para mezclar el mazo cuantas veces quieras, hasta sentir que estás listo.
+Luego, pulsa el botón clasico para expandir el mazo.
+
+Ahora comienza tu lectura:
+Arrastra una por una las cartas que sientas conectadas contigo hacia el recuadro central.
+La primera carta que selecciones representará tu pasado.
+La segunda, tu presente.
+Y la tercera, tu futuro.
+
+Al colocar la tercera carta, el oráculo realizará automáticamente la lectura completa.
+Respira… y deja que el tarot hable por ti`,
+    "modo_clasico_en.mp3": `You’ve selected the Classic mode.
+In this experience, all tarot cards will appear face down before you.
+You can shuffle the deck as many times as you like using the “Shuffle” button, until you feel ready.
+Then, press the Classic button to spread the cards.
+
+Begin your reading by dragging three cards, one by one, into the center frame.
+The first card will reveal your past.
+The second card, your present.
+And the third and final card, your future.
+
+Once you’ve placed the third card, the oracle will automatically begin your full reading.
+Take a deep breath… and let the tarot speak to you.`
+  };
+
+  function mostrarSubtituloDesdeAudio(nombreArchivo) {
+    const subtitulo = document.getElementById("subtitulo-audio");
+    const texto = subtitulosAudios[nombreArchivo];
+
+    if (texto) {
+      subtitulo.textContent = texto;
+      subtitulo.style.display = "block";
+      subtitulo.style.opacity = "1";
+      console.log("📝 Subtítulo mostrado:", texto);
+
+      setTimeout(() => {
+        subtitulo.style.opacity = "0";
+        setTimeout(() => {
+          subtitulo.style.display = "none";
+        }, 400);
+      }, 60000);
+    }
+  }
+
+  function toggleMute() {
+    const isMuted = window.audioMuted || false;
+    window.audioMuted = !isMuted;
+
+    const audios = document.querySelectorAll("audio");
+    audios.forEach(audio => {
+      audio.muted = window.audioMuted;
+    });
+
+    const btn = document.getElementById("mute-button");
+    const subtitulo = document.getElementById("subtitulo-audio");
+
+    const idioma = window.idiomaSeleccionado || "es";
+    const mensaje = idioma === "en" ? "🔇 Audio muted" : "🔇 Audio desactivado";
+
+    if (window.audioMuted) {
+      btn.textContent = "🔇";
+      subtitulo.textContent = mensaje;
+      subtitulo.style.display = "block";
+      subtitulo.style.opacity = "1";
+      console.log("📝 Subtítulo mostrado:", mensaje);
+
+      setTimeout(() => {
+        subtitulo.style.opacity = "0";
+        setTimeout(() => {
+          subtitulo.style.display = "none";
+        }, 400);
+      }, 3000);
+
+    } else {
+      btn.textContent = "🔊";
+      subtitulo.style.opacity = "0";
+      setTimeout(() => {
+        subtitulo.style.display = "none";
+      }, 400);
+    }
+  }
+
+  function reproducirAudioConSubtitulo(nombreArchivo) {
+    const audio = new Audio(`static/${nombreArchivo}`);
+    audio.play().catch(err => console.warn("🎙️ Error al reproducir:", err));
+    mostrarSubtituloDesdeAudio(nombreArchivo);
+  }
+  
+</script>
     
   </body>
 </html>
