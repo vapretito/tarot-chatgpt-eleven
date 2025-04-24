@@ -34,15 +34,14 @@ def respuesta():
             "Speak with clarity and poetic depth, interpreting each card as a whisper from the cosmos. "
             "Your words should feel ancient and powerful, like messages carried through time."
         )
-        voice_id = "51YRucvcq5ojp2byev44"
     else:
         system_prompt = (
             "Eres un maestro tarotista de voz sabia y ancestral. Hablas con serenidad, como si las palabras "
             "fluyeran desde un conocimiento profundo del alma humana. Cada interpretación de carta debe sentirse "
             "como un susurro del universo, revelando verdades ocultas con calma, claridad y misticismo."
         )
-        voice_id = "51YRucvcq5ojp2byev44"
 
+    # 💬 ChatGPT Response
     chat_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -52,7 +51,7 @@ def respuesta():
     )
     texto = chat_response.choices[0].message.content
 
-    # 📝 Generar PDF con la interpretación
+    # 📝 PDF Creation
     buffer = io.BytesIO()
     pdf = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
@@ -61,9 +60,8 @@ def respuesta():
     pdf.drawString(72, height - 72, f"Lectura de Tarot para {nombre}")
     pdf.setFont("Helvetica", 12)
 
-    lines = texto.split('\n')
     y = height - 110
-    for line in lines:
+    for line in texto.split('\n'):
         if y < 72:
             pdf.showPage()
             y = height - 72
@@ -73,25 +71,35 @@ def respuesta():
 
     pdf.save()
     buffer.seek(0)
+    with open("static/lectura.pdf", "wb") as f:
+        f.write(buffer.getvalue())
 
-    # 🔊 ElevenLabs TTS
+    # 🔊 ElevenLabs TTS con parámetros
     headers = {
         "xi-api-key": elevenlabs_api_key,
         "Content-Type": "application/json"
     }
+
     tts_data = {
         "text": texto,
-        "voice_settings": {"stability": 0.4, "similarity_boost": 0.75},
-        "model_id": "eleven_monolingual_v1"
+        "model_id": "eleven_multilingual_v2",
+        "voice_settings": {
+            "stability": 0.66,
+            "similarity_boost": 0.56,
+            "style": 0.0,
+            "use_speaker_boost": True,
+            "speed": 0.85  # más lento que normal
+        }
     }
-    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{voice_id}"
+
+    tts_url = f"https://api.elevenlabs.io/v1/text-to-speech/{VOICE_ID}"
     tts_response = requests.post(tts_url, headers=headers, json=tts_data)
 
-    # Guardar el audio y el PDF juntos
-    with open("static/lectura.pdf", "wb") as f:
-        f.write(buffer.getvalue())
+    if tts_response.status_code != 200:
+        return {"error": "Failed to generate audio", "detail": tts_response.text}, 500
 
     return send_file(io.BytesIO(tts_response.content), mimetype="audio/mpeg")
+
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
