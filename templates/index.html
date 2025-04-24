@@ -221,21 +221,28 @@ function cerrarModal() {
 <!-- ✅ Subtítulo centrado abajo -->
 <div id="subtitulo-audio" style="
   position: fixed;
-  bottom: 8vh;
+  bottom: 2vh;
   left: 50%;
   transform: translateX(-50%);
+  width: 90vw;
+  max-height: 8em; /* Aprox. 6 líneas */
   background-color: rgba(0, 0, 0, 0.6);
-  padding: 10px 20px;
+  padding: 12px 20px;
   border-radius: 6px;
   color: #fff3cd;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 14px;
+  text-align: left;
   text-shadow: 0 0 4px black;
-  z-index: 99999;
+  z-index: 9998;
   display: none;
   opacity: 0;
   transition: opacity 0.4s ease;
-"></div>
+  overflow-y: auto;
+  white-space: normal;
+  -webkit-overflow-scrolling: touch;
+">
+</div>
 <script>
  function elegirSesion(tipo) {
   document.getElementById("modal-sesion").style.display = "none";
@@ -382,7 +389,19 @@ ctx.clearRect(0, 0, canvas.width, canvas.height);
   window.idiomaSeleccionado = "es";
 
   const subtitulosAudios = {
-    "intro1_esp.mp3": `✨ Welcome to the Tarot Oracle. Here begins your journey into inner wisdom.
+    "intro1_esp.mp3": `✨ Bienvenido al Oráculo del Tarot. Aquí comienzas un viaje hacia el conocimiento interior.
+
+Puedes elegir entre dos modos de lectura: virtual y presencial.
+
+En el modo virtual, tienes dos formas de exploración:
+🔮 Una tirada clásica de 3 cartas, que revela el pasado, el presente y el futuro,
+🌟 O una tirada más profunda, el modo cruz celta, ideal para lecturas más detalladas.
+
+En el modo presencial, las cartas aparecerán boca arriba. Podrás observarlas con atención y dejarlas hablarte.
+Si lo deseas, puedes interpretar sus mensajes por tu cuenta, o dejar que el oráculo te guíe.
+
+Tómate un momento. Respira hondo. Tu destino está por revelarse...`,
+    "intro1_en.mp3": `✨ Welcome to the Tarot Oracle. Here begins your journey into inner wisdom.
 
 You can choose between two reading modes: virtual and in-person.
 
@@ -395,18 +414,6 @@ If you wish, you may interpret their messages on your own… or let the oracle g
 
 Take a moment. Breathe deeply.
 Your destiny is about to be revealed…`,
-    "intro1_en.mp3": `✨ Bienvenido al Oráculo del Tarot. Aquí comienzas un viaje hacia el conocimiento interior.
-
-Puedes elegir entre dos modos de lectura: virtual y presencial.
-
-En el modo virtual, tienes dos formas de exploración:
-🔮 Una tirada clásica de 3 cartas, que revela el pasado, el presente y el futuro,
-🌟 O una tirada más profunda, el modo cruz celta, ideal para lecturas más detalladas.
-
-En el modo presencial, las cartas aparecerán boca arriba. Podrás observarlas con atención y dejarlas hablarte.
-Si lo deseas, puedes interpretar sus mensajes por tu cuenta, o dejar que el oráculo te guíe.
-
-Tómate un momento. Respira hondo. Tu destino está por revelarse...`,
     "modo_virtual_esp.mp3": `Has elegido el modo virtual. En esta experiencia, puedes explorar el tarot a través de dos caminos:
 
 🔮 Una tirada clásica de 3 cartas, donde deberás desplegar tres naipes frente a ti. Cada una representa tu pasado, tu presente y tu futuro.
@@ -512,6 +519,51 @@ Take a deep breath… and let the tarot speak to you.`
   }
   
 </script>
-    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<!-- ✅ Tu función personalizada -->
+<script>
+  async function generarLecturaPDF({ nombre, cartasSeleccionadas, interpretacion }) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+
+    doc.setFontSize(18);
+    doc.text("Lectura del Tarot", 105, 20, { align: 'center' });
+
+    const fecha = new Date().toLocaleString();
+    doc.setFontSize(12);
+    doc.text(`Nombre: ${nombre}`, 20, 30);
+    doc.text(`Fecha: ${fecha}`, 20, 37);
+
+    doc.setFontSize(14);
+    doc.text("Interpretación:", 20, 50);
+    doc.setFontSize(11);
+    const texto = doc.splitTextToSize(interpretacion, 170);
+    doc.text(texto, 20, 60);
+
+    for (let i = 0; i < cartasSeleccionadas.length; i++) {
+      const img = await cargarImagenBase64(cartasSeleccionadas[i].imgSrc);
+      doc.addImage(img, 'PNG', 20 + i * 60, 100, 50, 80);
+      doc.text(cartasSeleccionadas[i].nombre, 25 + i * 60, 190);
+    }
+
+    doc.save("lectura_tarot.pdf");
+  }
+
+  function cargarImagenBase64(url) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.crossOrigin = 'Anonymous';
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        canvas.getContext("2d").drawImage(img, 0, 0);
+        resolve(canvas.toDataURL("image/png"));
+      };
+      img.src = url;
+    });
+  }
+</script>
   </body>
 </html>
