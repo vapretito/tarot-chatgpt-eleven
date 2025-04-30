@@ -965,7 +965,9 @@ var Deck = (function () {
             
               const idioma = window.idiomaSeleccionado || "es";
               const [c1, c2, c3] = window.clickedCards; // 🔥 Esta línea es clave
-              const nombre = window.nombreUsuario || "Consultante";
+              const nombreInput = document.getElementById("nombre-usuario");
+              const nombre = nombreInput?.value?.trim() || "Consultante";
+              window.nombreUsuario = nombre;
 
               const nombres = idioma === "en" ? nombresCartasEN : nombresCartas;
               const texto = idioma === "en"
@@ -980,7 +982,8 @@ var Deck = (function () {
                 headers: {
                   "Content-Type": "application/json"
                 },
-                body: JSON.stringify({ texto, idioma })
+                body: JSON.stringify({ texto, idioma, nombre })
+
               })
                 .then(res => res.blob())
                 .then(blob => {

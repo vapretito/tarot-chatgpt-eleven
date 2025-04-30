@@ -3,9 +3,10 @@ import openai
 import requests
 import io
 from flask_cors import CORS
-import time
-from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.colors import HexColor
 
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
@@ -13,6 +14,63 @@ CORS(app)
 openai.api_key = "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"
 elevenlabs_api_key = "sk_8478bd20a7bb4273ec7576787698be84e16637166965124c"
 VOICE_ID = "51YRucvcq5ojp2byev44"
+
+def create_mystic_pdf(texto, nombre):
+    buffer = io.BytesIO()
+    width, height = A4
+    margin = 60
+
+    # 🔮 Fondo oscuro por página
+    def draw_background(canvas, doc):
+        canvas.saveState()
+        canvas.setFillColor(HexColor("#120010"))
+        canvas.rect(0, 0, width, height, stroke=0, fill=1)
+        canvas.restoreState()
+
+    doc = BaseDocTemplate(buffer, pagesize=A4,
+                          leftMargin=margin, rightMargin=margin,
+                          topMargin=80, bottomMargin=60)
+
+    frame = Frame(margin, 60, width - 2 * margin, height - 140, id='normal')
+    template = PageTemplate(id='mystic', frames=[frame], onPage=draw_background)
+    doc.addPageTemplates([template])
+
+    styles = getSampleStyleSheet()
+
+    mystic_style = ParagraphStyle(
+        name='Mystic',
+        parent=styles['Normal'],
+        fontName='Helvetica',
+        fontSize=12,
+        leading=18,
+        textColor=HexColor("#FFEFD5"),
+    )
+
+    title_style = ParagraphStyle(
+        name='Title',
+        parent=styles['Heading1'],
+        alignment=1,
+        fontSize=18,
+        leading=24,
+        textColor=HexColor("#FFDEAD"),
+        spaceAfter=20
+    )
+
+    elements = []
+    elements.append(Paragraph(f"🔮 Lectura del Tarot para {nombre}", title_style))
+    elements.append(Spacer(1, 12))
+
+    for line in texto.strip().split('\n'):
+        if line.strip():
+            elements.append(Paragraph(line.strip(), mystic_style))
+            elements.append(Spacer(1, 12))
+
+    elements.append(Spacer(1, 24))
+    elements.append(Paragraph("✨ El Oráculo habla… escucha con el alma ✨", mystic_style))
+
+    doc.build(elements)
+    buffer.seek(0)
+    return buffer
 
 @app.route("/")
 def home():
@@ -28,20 +86,16 @@ def respuesta():
     idioma = data.get("idioma", "es")
     nombre = data.get("nombre", "Consultante")
 
-    if idioma == "en":
-        system_prompt = (
-            "You are a mystical tarot master with a calm and wise voice. "
-            "Speak with clarity and poetic depth, interpreting each card as a whisper from the cosmos. "
-            "Your words should feel ancient and powerful, like messages carried through time."
-        )
-    else:
-        system_prompt = (
-            "Eres un maestro tarotista de voz sabia y ancestral. Hablas con serenidad, como si las palabras "
-            "fluyeran desde un conocimiento profundo del alma humana. Cada interpretación de carta debe sentirse "
-            "como un susurro del universo, revelando verdades ocultas con calma, claridad y misticismo."
-        )
+    system_prompt = (
+        "You are a mystical tarot master with a calm and wise voice. "
+        "Speak with clarity and poetic depth, interpreting each card as a whisper from the cosmos. "
+        "Your words should feel ancient and powerful, like messages carried through time."
+    ) if idioma == "en" else (
+        "Eres un maestro tarotista de voz sabia y ancestral. Hablas con serenidad, como si las palabras "
+        "fluyeran desde un conocimiento profundo del alma humana. Cada interpretación de carta debe sentirse "
+        "como un susurro del universo, revelando verdades ocultas con calma, claridad y misticismo."
+    )
 
-    # 💬 ChatGPT Response
     chat_response = client.chat.completions.create(
         model="gpt-3.5-turbo",
         messages=[
@@ -51,30 +105,12 @@ def respuesta():
     )
     texto = chat_response.choices[0].message.content
 
-    # 📝 PDF Creation
-    buffer = io.BytesIO()
-    pdf = canvas.Canvas(buffer, pagesize=A4)
-    width, height = A4
-
-    pdf.setFont("Helvetica-Bold", 16)
-    pdf.drawString(72, height - 72, f"Lectura de Tarot para {nombre}")
-    pdf.setFont("Helvetica", 12)
-
-    y = height - 110
-    for line in texto.split('\n'):
-        if y < 72:
-            pdf.showPage()
-            y = height - 72
-            pdf.setFont("Helvetica", 12)
-        pdf.drawString(72, y, line)
-        y -= 20
-
-    pdf.save()
-    buffer.seek(0)
+    # 🧾 Generar PDF
+    buffer = create_mystic_pdf(texto, nombre)
     with open("static/lectura.pdf", "wb") as f:
         f.write(buffer.getvalue())
 
-    # 🔊 ElevenLabs TTS con parámetros
+    # 🎧 ElevenLabs TTS
     headers = {
         "xi-api-key": elevenlabs_api_key,
         "Content-Type": "application/json"
@@ -88,7 +124,7 @@ def respuesta():
             "similarity_boost": 0.56,
             "style": 0.0,
             "use_speaker_boost": True,
-            "speed": 0.85  # más lento que normal
+            "speed": 0.85
         }
     }
 
@@ -99,7 +135,6 @@ def respuesta():
         return {"error": "Failed to generate audio", "detail": tts_response.text}, 500
 
     return send_file(io.BytesIO(tts_response.content), mimetype="audio/mpeg")
-
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
