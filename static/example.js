@@ -20,14 +20,14 @@ var $flip = document.createElement('button')
 
 $shuffle.textContent = 'Shuffle'
 $sort.textContent = 'Sort'
-$bysuit.textContent = 'By suit'
+$bysuit.textContent = 'All'
 $fan.textContent = 'Clasico'
 $poker.textContent = 'Cruz Celta'
 $flip.textContent = 'Flip'
 
 // $topbar.appendChild($flip)
 // $topbar.appendChild($shuffle)
-// $topbar.appendChild($bysuit)
+$topbar.appendChild($bysuit)
 $topbar.appendChild($fan)
 $topbar.appendChild($poker)
 // $topbar.appendChild($sort)
