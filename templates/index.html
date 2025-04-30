@@ -8,6 +8,84 @@
     <link href="https://fonts.googleapis.com/css?family=Open+Sans:400,300,600|Ubuntu+Condensed" rel="stylesheet" type="text/css">
   </head>
   <body>
+    <canvas id="audio-visualizer"
+        style="position: fixed;
+               top: 0;
+               left: 0;
+               width: 100vw;
+               height: 100vh;
+               z-index: 10001;
+               pointer-events: none;
+               background: transparent;
+               display: none;">
+</canvas>
+
+
+<script>
+      function iniciarVisualizadorAudio(audioElementId) {
+  const audio = document.getElementById(audioElementId);
+  const canvas = document.getElementById("audio-visualizer");
+  const ctx = canvas.getContext("2d");
+
+  canvas.style.display = "block";
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const analyser = audioCtx.createAnalyser();
+  const source = audioCtx.createMediaElementSource(audio);
+  source.connect(analyser);
+  analyser.connect(audioCtx.destination);
+
+  analyser.fftSize = 256;
+  const bufferLength = analyser.frequencyBinCount;
+  const dataArray = new Uint8Array(bufferLength);
+
+  function draw() {
+    requestAnimationFrame(draw);
+    analyser.getByteFrequencyData(dataArray);
+    // si está todo en silencio, generamos movimiento leve (respiración)
+for (let i = 0; i < dataArray.length; i++) {
+  dataArray[i] = Math.max(dataArray[i], 10 + Math.sin(Date.now() * 0.002 + i) * 8);
+}
+
+    const w = canvas.width;
+    const h = canvas.height;
+    ctx.clearRect(0, 0, w, h);
+
+    const centerX = w / 2;
+    const centerY = 160;  // 🔼 Top quarter
+    const radius = 40;         // 🔽 Smaller
+
+    const points = bufferLength;
+
+    ctx.beginPath();
+    for (let i = 0; i < points; i++) {
+      const angle = (i / points) * Math.PI * 2;
+      const amp = dataArray[i] * 0.5;
+      const x = centerX + Math.cos(angle) * (radius + amp);
+      const y = centerY + Math.sin(angle) * (radius + amp);
+      ctx.lineTo(x, y);
+    }
+    ctx.closePath();
+
+    const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.5, centerX, centerY, radius * 2);
+    gradient.addColorStop(0, "rgba(173, 216, 230, 0.8)");
+    gradient.addColorStop(1, "rgba(138, 43, 226, 0.2)");
+    ctx.fillStyle = gradient;
+    ctx.fill();
+
+    ctx.strokeStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.lineWidth = 2;
+    ctx.stroke();
+  }
+  canvas.width = window.innerWidth;
+  canvas.height = window.innerHeight;
+
+  draw();
+}
+
+      </script>
+      
+      
     <audio id="musica-fondo" loop autoplay>
       <source src="{{ url_for('static', filename='musica-fondo.mp3') }}" type="audio/mpeg">
       Tu navegador no soporta audio HTML.
@@ -41,11 +119,15 @@ function cerrarModal() {
 
   audioIntro.load();
   audioIntro.play()
-    .then(() => mostrarSubtituloDesdeAudio(archivo))
+    .then(() => {
+      mostrarSubtituloDesdeAudio(archivo);
+      iniciarVisualizadorAudio("audio-intro"); // 🔮 AQUI activás la esfera
+    })
     .catch(e => console.warn("🎙️ No se pudo reproducir el audio:", e));
 
   audioIntro.addEventListener('ended', () => {
     mostrarSeleccionSesion();
+    document.getElementById("audio-visualizer").style.display = "none"; // ❌ ocultar la esfera al terminar
   }, { once: true });
 }
     
@@ -564,6 +646,19 @@ Take a deep breath… and let the tarot speak to you.`
       img.src = url;
     });
   }
+</script>
+
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    ["audio-virtual-es", "audio-intro", "audio-fan-es"].forEach(id => {
+      const audio = document.getElementById(id);
+      if (audio) {
+        audio.addEventListener("play", () => {
+          iniciarVisualizadorAudio(id);
+        });
+      }
+    });
+  });
 </script>
   </body>
 </html>
