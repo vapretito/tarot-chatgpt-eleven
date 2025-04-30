@@ -985,8 +985,24 @@ var Deck = (function () {
                 .then(res => res.blob())
                 .then(blob => {
                   const audio = new Audio(URL.createObjectURL(blob));
-                  audio.play();
+                  audio.id = "audio-chatgpt"; // ✅ ID necesario para el visualizador
+                  document.body.appendChild(audio); // opcional si querés tenerlo en el DOM
+                  audio.volume = 0.9;
+                
+                  audio.addEventListener("play", () => {
+                    iniciarVisualizadorAudio("audio-chatgpt"); // ✅ Activamos la esfera
+                  });
+                
+                  audio.addEventListener("ended", () => {
+                    document.getElementById("audio-visualizer").style.display = "none"; // ✅ Ocultamos luego
+                    audio.remove(); // limpieza
+                  });
+                
+                  audio.play().catch(err => {
+                    console.error("🎧 Error al reproducir audio:", err);
+                  });
                 })
+                
                 .catch(err => console.error("🎙️ Error al obtener audio:", err));
             }
           }

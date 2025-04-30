@@ -660,5 +660,44 @@ Take a deep breath… and let the tarot speak to you.`
     });
   });
 </script>
+<script>
+  async function obtenerLecturaDesdeChatGPT(texto, idioma, nombre) {
+    const response = await fetch("/respuesta", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ texto, idioma, nombre })
+    });
+  
+    if (!response.ok) {
+      console.error("❌ Error al obtener respuesta:", await response.text());
+      return;
+    }
+  
+    const blob = await response.blob();
+    const audioURL = URL.createObjectURL(blob);
+  
+    const audio = new Audio(audioURL);
+    audio.id = "audio-chatgpt";
+    document.body.appendChild(audio); // para que esté en el DOM si querés
+    audio.volume = 0.9;
+  
+    // 💫 Activamos el visualizador místico
+    audio.addEventListener("play", () => {
+      iniciarVisualizadorAudio(audio.id);
+    });
+  
+    audio.addEventListener("ended", () => {
+      document.getElementById("audio-visualizer").style.display = "none";
+      audio.remove(); // limpieza opcional
+    });
+  
+    audio.play().catch((err) => {
+      console.warn("🎙️ Error al reproducir audio:", err);
+    });
+  }
+  </script>
+  
   </body>
 </html>
