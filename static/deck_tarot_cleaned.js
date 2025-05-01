@@ -938,76 +938,57 @@ var Deck = (function () {
         $el.addEventListener('touchstart', () => { dragged = true; });
   
         function tryFlip() {
-          if (!flipped && window.cardsFlipped < 3) {
-            _card6.setSide('front');
-            flipped = true;
+          flipped = !flipped;
+          _card6.setSide(flipped ? 'front' : 'back');
         
-            // Guardamos la carta seleccionada
-            const cartaIndex = parseInt(_card6.$el.getAttribute("data-index"), 10);
-            window.clickedCards.push({
-            index: cartaIndex,
-             carta: _card6
-             });
-
+          const cartaIndex = parseInt(_card6.$el.getAttribute("data-index"), 10);
         
+          const yaSeleccionada = window.clickedCards.find(c => c.index === cartaIndex);
+          if (!yaSeleccionada && window.cardsFlipped < 3) {
+            window.clickedCards.push({ index: cartaIndex, carta: _card6 });
             window.cardsFlipped++;
+          }
+          
         
-            // ✅ Permite que la carta seleccionada siga siendo movible
-            // pero no la bloqueamos completamente
-            $el.removeEventListener('mouseup', tryFlip);
-            $el.removeEventListener('touchend', tryFlip);
-            $el.removeEventListener('click', tryFlip);
+          // Al seleccionar 3 cartas, bloquear el resto
+          if (window.cardsFlipped === 3 && !window.mensajeEnviado) {
+            bloquearCartasNoSeleccionadas();
+            window.mensajeEnviado = true;
         
-            // Cuando se eligen las 3, enviamos la interpretación completa
-            if (window.cardsFlipped === 3 && !window.mensajeEnviado) {
-              window.mensajeEnviado = true;
-              bloquearCartasRestantes();
-            
-              const idioma = window.idiomaSeleccionado || "es";
-              const [c1, c2, c3] = window.clickedCards; // 🔥 Esta línea es clave
-              const nombreInput = document.getElementById("nombre-usuario");
-              const nombre = nombreInput?.value?.trim() || "Consultante";
-              window.nombreUsuario = nombre;
-
-              const nombres = idioma === "en" ? nombresCartasEN : nombresCartas;
-              const texto = idioma === "en"
-               ? `My name is ${nombre} and I want to know the tarot reading interpretation:\nPast: ${nombres[c1.index]}\nPresent: ${nombres[c2.index]}\nFuture: ${nombres[c3.index]}`
-               : `Mi nombre es ${nombre} y quiero saber la interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
-
-            
-              console.log("🧠 Texto enviado a GPT:", texto);
-            
-              fetch("/respuesta", {
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify({ texto, idioma, nombre })
-
-              })
-                .then(res => res.blob())
-                .then(blob => {
-                  const audio = new Audio(URL.createObjectURL(blob));
-                  audio.id = "audio-chatgpt"; // ✅ ID necesario para el visualizador
-                  document.body.appendChild(audio); // opcional si querés tenerlo en el DOM
-                  audio.volume = 0.9;
-                
-                  audio.addEventListener("play", () => {
-                    iniciarVisualizadorAudio("audio-chatgpt"); // ✅ Activamos la esfera
-                  });
-                
-                  audio.addEventListener("ended", () => {
-                    document.getElementById("audio-visualizer").style.display = "none"; // ✅ Ocultamos luego
-                    audio.remove(); // limpieza
-                  });
-                
-                  audio.play().catch(err => {
-                    console.error("🎧 Error al reproducir audio:", err);
-                  });
-                })
-                
-                .catch(err => console.error("🎙️ Error al obtener audio:", err));
-            }
+            const idioma = window.idiomaSeleccionado || "es";
+            const [c1, c2, c3] = window.clickedCards;
+            const nombreInput = document.getElementById("nombre-usuario");
+            const nombre = nombreInput?.value?.trim() || "Consultante";
+            window.nombreUsuario = nombre;
+        
+            const nombres = idioma === "en" ? nombresCartasEN : nombresCartas;
+            const texto = idioma === "en"
+              ? `My name is ${nombre} and I want to know the tarot reading interpretation:\nPast: ${nombres[c1.index]}\nPresent: ${nombres[c2.index]}\nFuture: ${nombres[c3.index]}`
+              : `Mi nombre es ${nombre} y quiero saber la interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
+        
+            console.log("🧠 Texto enviado a GPT:", texto);
+        
+            fetch("/respuesta", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ texto, idioma, nombre, cartas: window.clickedCards })
+            })
+            .then(res => res.blob())
+            .then(blob => {
+              const audio = new Audio(URL.createObjectURL(blob));
+              audio.id = "audio-chatgpt";
+              document.body.appendChild(audio);
+              audio.volume = 0.9;
+        
+              audio.addEventListener("play", () => iniciarVisualizadorAudio(audio.id));
+              audio.addEventListener("ended", () => {
+                document.getElementById("audio-visualizer").style.display = "none";
+                audio.remove();
+              });
+        
+              audio.play().catch(err => console.error("🎧 Error al reproducir audio:", err));
+            })
+            .catch(err => console.error("🎙️ Error al obtener audio:", err));
           }
         }
         
@@ -1016,10 +997,12 @@ var Deck = (function () {
         $el.addEventListener('mouseup', tryFlip);
         $el.addEventListener('touchend', tryFlip);
   
-        function bloquearCartasRestantes() {
+        function bloquearCartasNoSeleccionadas() {
           window.allFanCards.forEach(function (c) {
-            const wasClicked = window.clickedCards.includes(c);
-            c.$el.style.pointerEvents = wasClicked ? 'auto' : 'none';
+            const index = parseInt(c.$el.getAttribute("data-index"), 10);
+            const seleccionada = window.clickedCards.find(card => card.index === index);
+        
+            c.$el.style.pointerEvents = seleccionada ? "auto" : "none";
           });
         }
       };
