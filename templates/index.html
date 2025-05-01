@@ -20,6 +20,25 @@
                display: none;">
 </canvas>
 
+<script>
+  function volverAlInicio() {
+  // Oculta todos los modales visibles
+  document.querySelectorAll('[id^="modal-"]').forEach(modal => modal.style.display = "none");
+
+  // Muestra solo el modal-sesion
+  document.getElementById("modal-sesion").style.display = "flex";
+
+  // Detener cualquier audio que esté reproduciéndose
+  document.querySelectorAll("audio").forEach(audio => {
+    audio.pause();
+    audio.currentTime = 0;
+  });
+
+  // Ocultar visualizador si estuviera encendido
+  document.getElementById("audio-visualizer").style.display = "none";
+}
+
+</script>
 
 <script>
       function iniciarVisualizadorAudio(audioElementId) {
@@ -336,6 +355,10 @@ function cerrarModal() {
     cursor: pointer;
     color: white;
     text-shadow: 0 0 4px black;">🔊</button>
+</div>
+<div id="audio-control" style="position: fixed; top: 20px; left: 20px; z-index: 10001; display: flex; gap: 10px;">
+  <button onclick="toggleMute()" id="mute-button" style="background: none; border: none; font-size: 28px; cursor: pointer; color: white; text-shadow: 0 0 4px black;">🔊</button>
+  <button onclick="volverAlInicio()" title="Inicio" style="background: none; border: none; font-size: 28px; cursor: pointer; color: white; text-shadow: 0 0 4px black;">🏠</button>
 </div>
 
 <!-- ✅ Subtítulo centrado abajo -->
