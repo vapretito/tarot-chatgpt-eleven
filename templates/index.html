@@ -308,6 +308,8 @@ function cerrarModal() {
       </button> -->
       <button onclick="elegirSesion('virtual')" style="margin: 10px; padding: 12px 24px; font-size: 18px; border: none; border-radius: 8px; background: #7a5195; color: white; cursor: pointer;">🔮 Virtual</button>
       <button onclick="elegirSesion('presencial')" style="margin: 10px; padding: 12px 24px; font-size: 18px; border: none; border-radius: 8px; background: #ef476f; color: white; cursor: pointer;">🏠 Presencial</button>
+      <button onclick="volverAInstrucciones()" style="margin-top: 20px; background: #ccc; padding: 8px 20px; border-radius: 6px; font-size: 14px;">⬅️ Atrás</button>
+
     </div>
   </div>
   
@@ -316,6 +318,8 @@ function cerrarModal() {
     <div id="opciones-modo" style="background: #eae2b7; padding: 40px; border-radius: 16px; text-align: center; box-shadow: 0 0 20px rgba(0,0,0,0.6); max-width: 500px; width: 90%;">
       <h2 style="margin-bottom: 20px;">🔮 Elige tu modo</h2>
       <div id="botones-modos"></div>
+      <button onclick="volverASesion()" style="margin-top: 20px; background: #ccc; padding: 8px 20px; border-radius: 6px; font-size: 14px;">⬅️ Atrás</button>
+
     </div>
   </div>
   
@@ -756,7 +760,7 @@ Tómate tu tiempo. El mensaje ya está en camino...`
 
 <script>
   window.addEventListener('DOMContentLoaded', () => {
-    ["audio-virtual-es", "audio-intro", "audio-fan-es"].forEach(id => {
+    ["audio-virtual-es", "audio-virtual-en","audio-intro", "audio-fan-es", "audio-fan-en"].forEach(id => {
       const audio = document.getElementById(id);
       if (audio) {
         audio.addEventListener("play", () => {
@@ -804,6 +808,29 @@ Tómate tu tiempo. El mensaje ya está en camino...`
     });
   }
   </script>
+  <script>
+    function volverAInstrucciones() {
+  document.getElementById("modal-sesion").style.display = "none";
+  document.getElementById("modal-instrucciones").style.display = "flex";
+}
+
+function volverASesion() {
+  document.getElementById("modal-modo").style.display = "none";
+  document.getElementById("modal-sesion").style.display = "flex";
+}
+
+
+
+  </script>
+  <style>
+    button {
+  transition: background 0.3s ease;
+}
+button:hover {
+  background: #aaa;
+}
+
+  </style>
   
   </body>
 </html>

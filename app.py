@@ -8,6 +8,8 @@ from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 
+
+
 app = Flask(__name__, static_folder='static', template_folder='templates')
 CORS(app)
 
