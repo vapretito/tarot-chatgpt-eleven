@@ -60,52 +60,35 @@
 
   function draw() {
   requestAnimationFrame(draw);
-  analyser.getByteFrequencyData(dataArray);
+  analyser.getByteTimeDomainData(dataArray); // importante: no es getByteFrequencyData
 
   const w = canvas.width;
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  const centerX = w / 2;
-  const centerY = 80;
-  const radius = 40;
-  const t = Date.now() * 0.002;
-
-  const smoothData = new Float32Array(bufferLength);
-  for (let i = 0; i < bufferLength; i++) {
-    const prev = dataArray[i - 1] || dataArray[i];
-    const next = dataArray[i + 1] || dataArray[i];
-    const base = (prev + dataArray[i] + next) / 3;
-
-    const wave = Math.sin(t + i * 0.2) * 3 + Math.cos(t * 0.6 + i * 0.1) * 2;
-    smoothData[i] = base * 0.15 + wave;
-  }
-
-  // 🌕 Esfera ondulante
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = "rgba(0, 255, 200, 0.9)";
   ctx.beginPath();
-  for (let i = 0; i <= bufferLength; i++) {
-    const j = i % bufferLength;
-    const angle = (j / bufferLength) * Math.PI * 2;
-    const amp = smoothData[j];
-    const x = centerX + Math.cos(angle) * (radius + amp);
-    const y = centerY + Math.sin(angle) * (radius + amp);
-    if (i === 0) ctx.moveTo(x, y);
-    else ctx.lineTo(x, y);
+
+  const sliceWidth = w / bufferLength;
+  let x = 0;
+
+  for (let i = 0; i < bufferLength; i++) {
+    const v = dataArray[i] / 128.0;
+    const y = v * h / 2;
+
+    if (i === 0) {
+      ctx.moveTo(x, y);
+    } else {
+      ctx.lineTo(x, y);
+    }
+
+    x += sliceWidth;
   }
-  ctx.closePath();
 
-  // 🌈 Gradiente místico
-  const gradient = ctx.createRadialGradient(centerX, centerY, radius * 0.3, centerX, centerY, radius * 2);
-  gradient.addColorStop(0, "rgba(255, 245, 225, 0.8)");
-  gradient.addColorStop(0.5, "rgba(153, 102, 255, 0.5)");
-  gradient.addColorStop(1, `rgba(0, 204, 255, ${0.3 + 0.1 * Math.sin(t * 0.4)})`);
-
-  ctx.fillStyle = gradient;
-  ctx.fill();
-
-  ctx.strokeStyle = "rgba(255, 255, 255, 0.3)";
-  ctx.lineWidth = 1.3;
+  ctx.lineTo(w, h / 2);
   ctx.stroke();
+
 
   // 🌫️ Halo suave
   const haloRadius = radius * 2.3 + Math.sin(t * 1.1) * 6;
@@ -134,7 +117,7 @@
 canvas.width = window.innerWidth;
 canvas.height = window.innerHeight;
 draw();
-}
+      }
 
       </script>
       
