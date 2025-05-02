@@ -58,54 +58,13 @@
   const bufferLength = analyser.frequencyBinCount;
   const dataArray = new Uint8Array(bufferLength);
 
-  function draw() {
-  requestAnimationFrame(draw);
-  analyser.getByteTimeDomainData(dataArray);
-
-  const w = canvas.width;
-  const h = canvas.height;
-  ctx.clearRect(0, 0, w, h);
-
-  const gradient = ctx.createLinearGradient(0, 0, w, 0);
-  gradient.addColorStop(0, "rgba(255, 204, 255, 0.9)");
-  gradient.addColorStop(0.5, "rgba(102, 255, 255, 0.9)");
-  gradient.addColorStop(1, "rgba(204, 153, 255, 0.9)");
-
-  ctx.lineWidth = 2.5;
-  ctx.shadowColor = "rgba(255, 255, 255, 0.2)";
-  ctx.shadowBlur = 10;
-
-  ctx.strokeStyle = gradient;
-  ctx.beginPath();
-
-  const sliceWidth = w / bufferLength;
-  let x = 0;
-
-  for (let i = 0; i < bufferLength; i++) {
-    const v = dataArray[i] / 128.0;
-    const fluctuation = Math.sin(Date.now() * 0.002 + i * 0.15) * 4;
-    const y = (v * h / 2 - h / 4) + fluctuation + h / 2;
-
-    if (i === 0) {
-      ctx.moveTo(x, y);
-    } else {
-      ctx.lineTo(x, y);
-    }
-
-    x += sliceWidth;
-  }
-
-  ctx.stroke();
-// opcion dos mas onda
   // function draw() {
   // requestAnimationFrame(draw);
-  // analyser.getByteFrequencyData(dataArray);
+  // analyser.getByteTimeDomainData(dataArray);
 
   // const w = canvas.width;
   // const h = canvas.height;
   // ctx.clearRect(0, 0, w, h);
-
-  // const t = Date.now() * 0.002; // ⏳ ¡Agregado!
 
   // const gradient = ctx.createLinearGradient(0, 0, w, 0);
   // gradient.addColorStop(0, "rgba(255, 204, 255, 0.9)");
@@ -113,9 +72,9 @@
   // gradient.addColorStop(1, "rgba(204, 153, 255, 0.9)");
 
   // ctx.lineWidth = 2.5;
-  // ctx.lineJoin = "round";
   // ctx.shadowColor = "rgba(255, 255, 255, 0.2)";
   // ctx.shadowBlur = 10;
+
   // ctx.strokeStyle = gradient;
   // ctx.beginPath();
 
@@ -123,16 +82,57 @@
   // let x = 0;
 
   // for (let i = 0; i < bufferLength; i++) {
-  //   const v = dataArray[i] / 255;
-  //   const y = h / 2 - v * h * 0.4 + Math.sin(t + i * 0.1) * 4;
+  //   const v = dataArray[i] / 128.0;
+  //   const fluctuation = Math.sin(Date.now() * 0.002 + i * 0.15) * 4;
+  //   const y = (v * h / 2 - h / 4) + fluctuation + h / 2;
 
-  //   if (i === 0) ctx.moveTo(x, y);
-  //   else ctx.lineTo(x, y);
+  //   if (i === 0) {
+  //     ctx.moveTo(x, y);
+  //   } else {
+  //     ctx.lineTo(x, y);
+  //   }
 
   //   x += sliceWidth;
   // }
 
   // ctx.stroke();
+// opcion dos mas onda
+   function draw() {
+   requestAnimationFrame(draw);
+   analyser.getByteFrequencyData(dataArray);
+
+   const w = canvas.width;
+   const h = canvas.height;
+   ctx.clearRect(0, 0, w, h);
+
+   const t = Date.now() * 0.002;  //⏳ ¡Agregado!
+
+   const gradient = ctx.createLinearGradient(0, 0, w, 0);
+   gradient.addColorStop(0, "rgba(255, 204, 255, 0.9)");
+   gradient.addColorStop(0.5, "rgba(102, 255, 255, 0.9)");
+   gradient.addColorStop(1, "rgba(204, 153, 255, 0.9)");
+
+   ctx.lineWidth = 2.5;
+   ctx.lineJoin = "round";
+   ctx.shadowColor = "rgba(255, 255, 255, 0.2)";
+   ctx.shadowBlur = 10;
+   ctx.strokeStyle = gradient;
+   ctx.beginPath();
+
+   const sliceWidth = w / bufferLength;
+   let x = 0;
+
+   for (let i = 0; i < bufferLength; i++) {
+     const v = dataArray[i] / 255;
+     const y = h / 2 - v * h * 0.4 + Math.sin(t + i * 0.1) * 4;
+
+     if (i === 0) ctx.moveTo(x, y);
+     else ctx.lineTo(x, y);
+
+     x += sliceWidth;
+   }
+
+   ctx.stroke();
 
 
 
