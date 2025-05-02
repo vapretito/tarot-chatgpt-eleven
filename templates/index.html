@@ -13,12 +13,12 @@
                top: 0;
                left: 0;
                width: 100vw;
-               height: 100vh;
+               height: 100px;
                z-index: 10001;
                pointer-events: none;
-               background: transparent;
-               display: none;">
+               background: transparent;">
 </canvas>
+
 
 <script>
   function volverAlInicio() {
@@ -60,14 +60,22 @@
 
   function draw() {
   requestAnimationFrame(draw);
-  analyser.getByteTimeDomainData(dataArray); // importante: no es getByteFrequencyData
+  analyser.getByteTimeDomainData(dataArray);
 
   const w = canvas.width;
   const h = canvas.height;
   ctx.clearRect(0, 0, w, h);
 
-  ctx.lineWidth = 2;
-  ctx.strokeStyle = "rgba(0, 255, 200, 0.9)";
+  const gradient = ctx.createLinearGradient(0, 0, w, 0);
+  gradient.addColorStop(0, "rgba(255, 204, 255, 0.9)");
+  gradient.addColorStop(0.5, "rgba(102, 255, 255, 0.9)");
+  gradient.addColorStop(1, "rgba(204, 153, 255, 0.9)");
+
+  ctx.lineWidth = 2.5;
+  ctx.shadowColor = "rgba(255, 255, 255, 0.2)";
+  ctx.shadowBlur = 10;
+
+  ctx.strokeStyle = gradient;
   ctx.beginPath();
 
   const sliceWidth = w / bufferLength;
@@ -75,7 +83,8 @@
 
   for (let i = 0; i < bufferLength; i++) {
     const v = dataArray[i] / 128.0;
-    const y = v * h / 2;
+    const fluctuation = Math.sin(Date.now() * 0.002 + i * 0.15) * 4;
+    const y = (v * h / 2 - h / 4) + fluctuation + h / 2;
 
     if (i === 0) {
       ctx.moveTo(x, y);
@@ -86,36 +95,76 @@
     x += sliceWidth;
   }
 
-  ctx.lineTo(w, h / 2);
   ctx.stroke();
+// opcion dos mas onda
+  // function draw() {
+  // requestAnimationFrame(draw);
+  // analyser.getByteFrequencyData(dataArray);
+
+  // const w = canvas.width;
+  // const h = canvas.height;
+  // ctx.clearRect(0, 0, w, h);
+
+  // const t = Date.now() * 0.002; // ⏳ ¡Agregado!
+
+  // const gradient = ctx.createLinearGradient(0, 0, w, 0);
+  // gradient.addColorStop(0, "rgba(255, 204, 255, 0.9)");
+  // gradient.addColorStop(0.5, "rgba(102, 255, 255, 0.9)");
+  // gradient.addColorStop(1, "rgba(204, 153, 255, 0.9)");
+
+  // ctx.lineWidth = 2.5;
+  // ctx.lineJoin = "round";
+  // ctx.shadowColor = "rgba(255, 255, 255, 0.2)";
+  // ctx.shadowBlur = 10;
+  // ctx.strokeStyle = gradient;
+  // ctx.beginPath();
+
+  // const sliceWidth = w / bufferLength;
+  // let x = 0;
+
+  // for (let i = 0; i < bufferLength; i++) {
+  //   const v = dataArray[i] / 255;
+  //   const y = h / 2 - v * h * 0.4 + Math.sin(t + i * 0.1) * 4;
+
+  //   if (i === 0) ctx.moveTo(x, y);
+  //   else ctx.lineTo(x, y);
+
+  //   x += sliceWidth;
+  // }
+
+  // ctx.stroke();
+
+
+
+
 
 
   // 🌫️ Halo suave
-  const haloRadius = radius * 2.3 + Math.sin(t * 1.1) * 6;
-  const haloGradient = ctx.createRadialGradient(centerX, centerY, radius, centerX, centerY, haloRadius);
-  haloGradient.addColorStop(0, "rgba(255, 255, 255, 0.08)");
-  haloGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-  ctx.beginPath();
-  ctx.arc(centerX, centerY, haloRadius, 0, Math.PI * 2);
-  ctx.fillStyle = haloGradient;
-  ctx.fill();
+  // const haloRadius = radius * 2.3 + Math.sin(t * 1.1) * 6;
+  // const haloGradient = ctx.createRadialGradient(centerX, centerY, radius, centerX, centerY, haloRadius);
+  // haloGradient.addColorStop(0, "rgba(255, 255, 255, 0.08)");
+  // haloGradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+  // ctx.beginPath();
+  // ctx.arc(centerX, centerY, haloRadius, 0, Math.PI * 2);
+  // ctx.fillStyle = haloGradient;
+  // ctx.fill();
 
   // 🔄 Círculo giratorio tipo sigilo
-  ctx.save();
-  ctx.translate(centerX, centerY);
-  ctx.rotate(t * 0.1);
-  ctx.beginPath();
-  ctx.arc(0, 0, radius + 20, 0, Math.PI * 2);
-  ctx.strokeStyle = "rgba(255,255,255,0.1)";
-  ctx.setLineDash([4, 8]);
-  ctx.lineWidth = 1;
-  ctx.stroke();
-  ctx.setLineDash([]);
-  ctx.restore();
+  // ctx.save();
+  // ctx.translate(centerX, centerY);
+  // ctx.rotate(t * 0.1);
+  // ctx.beginPath();
+  // ctx.arc(0, 0, radius + 20, 0, Math.PI * 2);
+  // ctx.strokeStyle = "rgba(255,255,255,0.1)";
+  // ctx.setLineDash([4, 8]);
+  // ctx.lineWidth = 1;
+  // ctx.stroke();
+  // ctx.setLineDash([]);
+  // ctx.restore();
 }
 
 canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
+canvas.height = 100;
 draw();
       }
 
