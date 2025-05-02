@@ -967,11 +967,12 @@ var Deck = (function () {
               : `Mi nombre es ${nombre} y quiero saber la interpretación de la lectura del tarot:\nPasado: ${nombres[c1.index]}\nPresente: ${nombres[c2.index]}\nFuturo: ${nombres[c3.index]}`;
         
             console.log("🧠 Texto enviado a GPT:", texto);
-        
+            const cartasSeleccionadas = [c1.index, c2.index, c3.index];
+
             fetch("/respuesta", {
               method: "POST",
               headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({ texto, idioma, nombre, cartas: window.clickedCards })
+              body: JSON.stringify({ texto, idioma, nombre, cartas: cartasSeleccionadas  })
             })
             .then(res => res.blob())
             .then(blob => {

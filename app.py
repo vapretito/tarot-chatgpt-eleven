@@ -7,6 +7,8 @@ from reportlab.lib.pagesizes import A4
 from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
+from reportlab.platypus import Image  # ya lo tienes
+
 
 
 
@@ -17,12 +19,11 @@ openai.api_key = "sk-proj-0pXu5rXnrFc3lcbdP79AzTl1UwPjD24yMpa-Qqa7oZ4iG5AGi91SQG
 elevenlabs_api_key = "sk_8478bd20a7bb4273ec7576787698be84e16637166965124c"
 VOICE_ID = "51YRucvcq5ojp2byev44"
 
-def create_mystic_pdf(texto, nombre):
+def create_mystic_pdf(texto, nombre, cartas):
     buffer = io.BytesIO()
     width, height = A4
     margin = 60
 
-    # 🔮 Fondo oscuro por página
     def draw_background(canvas, doc):
         canvas.saveState()
         canvas.setFillColor(HexColor("#120010"))
@@ -38,29 +39,19 @@ def create_mystic_pdf(texto, nombre):
     doc.addPageTemplates([template])
 
     styles = getSampleStyleSheet()
+    mystic_style = ParagraphStyle(name='Mystic', parent=styles['Normal'], fontSize=12, leading=18, textColor=HexColor("#FFEFD5"))
+    title_style = ParagraphStyle(name='Title', parent=styles['Heading1'], alignment=1, fontSize=18, leading=24, textColor=HexColor("#FFDEAD"), spaceAfter=20)
 
-    mystic_style = ParagraphStyle(
-        name='Mystic',
-        parent=styles['Normal'],
-        fontName='Helvetica',
-        fontSize=12,
-        leading=18,
-        textColor=HexColor("#FFEFD5"),
-    )
+    elements = [Paragraph(f"🔮 Lectura del Tarot para {nombre}", title_style), Spacer(1, 12)]
 
-    title_style = ParagraphStyle(
-        name='Title',
-        parent=styles['Heading1'],
-        alignment=1,
-        fontSize=18,
-        leading=24,
-        textColor=HexColor("#FFDEAD"),
-        spaceAfter=20
-    )
-
-    elements = []
-    elements.append(Paragraph(f"🔮 Lectura del Tarot para {nombre}", title_style))
-    elements.append(Spacer(1, 12))
+    # 🔮 Agregar cartas como imágenes
+    for idx in cartas:
+        try:
+            path = f"static/tarot/RWSa-T-{str(idx).zfill(2)}.png"
+            elements.append(Image(path, width=120, height=190))
+            elements.append(Spacer(1, 10))
+        except Exception as e:
+            print(f"❌ Error al cargar imagen de carta {idx}: {e}")
 
     for line in texto.strip().split('\n'):
         if line.strip():
@@ -108,7 +99,9 @@ def respuesta():
     texto = chat_response.choices[0].message.content
 
     # 🧾 Generar PDF
-    buffer = create_mystic_pdf(texto, nombre)
+    cartas = data.get("cartas", [])
+    buffer = create_mystic_pdf(texto, nombre, cartas)
+
     with open("static/lectura.pdf", "wb") as f:
         f.write(buffer.getvalue())
 
