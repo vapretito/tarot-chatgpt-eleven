@@ -939,7 +939,7 @@ var Deck = (function () {
   
         function tryFlip() {
           flipped = !flipped;
-          _card6.setSide(flipped ? 'front' : 'back');
+          _card6.setSide('front' );
         
           const cartaIndex = parseInt(_card6.$el.getAttribute("data-index"), 10);
         
