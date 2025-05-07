@@ -247,6 +247,7 @@ function cerrarModal() {
   document.getElementById("boton-comenzar").style.display = "inline-block";
   document.getElementById("boton-shuffle").style.display = "none"; // 👈 ocultar mientras están los modales
   
+  iniciarReconocimientoVoz();
 
 }
         
@@ -887,50 +888,83 @@ button:hover {
 
   </style>
 
-<script>
+<<script>
+  let recognition; // hacerlo global para poder detenerlo
+
   const comandosVoz = {
-    "comenzar lectura": () => document.getElementById("boton-comenzar")?.click(),
-    "modo virtual": () => elegirSesion("virtual"),
-    "modo presencial": () => elegirSesion("presencial"),
-    "cruz celta": () => seleccionarModo("cruz celta"),
-    "modo clasico": () => seleccionarModo("clasico"),
-    "modo all": () => seleccionarModo("all"),
-    "silenciar audio": () => {
-      if (!window.audioMuted) toggleMute();
+    "es": {
+      "comenzar": () => document.getElementById("boton-comenzar")?.click(),
+      "modo virtual": () => elegirSesion("virtual"),
+      "modo presencial": () => elegirSesion("presencial"),
+      "cruz celta": () => seleccionarModo("cruz celta"),
+      "clasico": () => seleccionarModo("clasico"),
+      "modo all": () => seleccionarModo("all"),
+      "silenciar audio": () => { if (!window.audioMuted) toggleMute(); },
+      "activar audio": () => { if (window.audioMuted) toggleMute(); },
+      "volver al inicio": () => volverAlInicio(),
     },
-    "activar audio": () => {
-      if (window.audioMuted) toggleMute();
-    },
-    "volver al inicio": () => volverAlInicio(),
+    "en": {
+      "start": () => document.getElementById("boton-comenzar")?.click(),
+      "virtual mode": () => elegirSesion("virtual"),
+      "in-person mode": () => elegirSesion("presencial"),
+      "celtic cross": () => seleccionarModo("cruz celta"),
+      "classic": () => seleccionarModo("clasico"),
+      "all mode": () => seleccionarModo("all"),
+      "mute audio": () => { if (!window.audioMuted) toggleMute(); },
+      "unmute audio": () => { if (window.audioMuted) toggleMute(); },
+      "go back to start": () => volverAlInicio(),
+    }
   };
 
-  window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  function iniciarReconocimientoVoz() {
+    if (!window.SpeechRecognition && !window.webkitSpeechRecognition) {
+      console.warn("⚠️ API de voz no soportada.");
+      return;
+    }
 
-  if (window.SpeechRecognition) {
-    const recognition = new SpeechRecognition();
-    recognition.lang = 'es-ES';
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    // Detener uno anterior si existe
+    if (recognition) {
+      recognition.stop();
+    }
+
+    recognition = new SpeechRecognition();
+    const idioma = (window.idiomaSeleccionado === 'en') ? 'en' : 'es';
+    recognition.lang = idioma === 'en' ? 'en-US' : 'es-ES';
     recognition.continuous = true;
     recognition.interimResults = false;
 
     recognition.onresult = (event) => {
       const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
-      console.log("🎙️ Comando detectado:", transcript);
-      for (let comando in comandosVoz) {
-        if (transcript.includes(comando)) {
-          comandosVoz[comando]();
+      const comandos = comandosVoz[idioma];
+
+      for (let frase in comandos) {
+        if (transcript.includes(frase)) {
+          comandos[frase]();
           break;
         }
       }
     };
 
-    recognition.onerror = (e) => console.warn("❌ Error reconocimiento de voz:", e.error);
+    recognition.onerror = (e) => {
+      console.warn("❌ Error reconocimiento de voz:", e.error);
+    };
+
+    recognition.onend = () => {
+      // Reiniciar en caso de cortes
+      recognition.start();
+    };
 
     recognition.start();
-    console.log("🎤 Reconocimiento de voz activado");
-  } else {
-    console.warn("⚠️ Reconocimiento de voz no soportado en este navegador.");
+    console.log("🎤 Reconocimiento de voz activado en idioma:", recognition.lang);
   }
+
+  window.addEventListener("DOMContentLoaded", () => {
+    iniciarReconocimientoVoz(); // iniciar al cargar
+  });
 </script>
+
 
   
   </body>
