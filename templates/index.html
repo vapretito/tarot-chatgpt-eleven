@@ -887,8 +887,66 @@ button:hover {
 }
 
   </style>
+<button id="boton-dictado" onclick="activarDictadoManual()" style="
+position: fixed;
+bottom: 12vh;
+left: 50%;
+transform: translateX(-50%);
+background: #6a4c93;
+color: white;
+border: none;
+padding: 12px 24px;
+border-radius: 10px;
+font-size: 16px;
+cursor: pointer;
+z-index: 10000;
+box-shadow: 0 4px 8px rgba(0,0,0,0.4);
+">
+🎤 Dictar comando
+</button>
+<script>
+  function activarDictadoManual() {
+    const input = document.getElementById("dictadoManual");
+    input.value = "";
+    input.focus();
 
-<<script>
+    // Forzar teclado en móviles iOS
+    setTimeout(() => {
+      if (input.setSelectionRange) {
+        input.setSelectionRange(input.value.length, input.value.length);
+      }
+    }, 100);
+  }
+
+  function interpretarComando(texto) {
+    const idioma = window.idiomaSeleccionado === 'en' ? 'en' : 'es';
+    const comandos = comandosVoz[idioma];
+    const lower = texto.trim().toLowerCase();
+
+    for (let cmd in comandos) {
+      if (lower.includes(cmd)) {
+        comandos[cmd]();
+        break;
+      }
+    }
+  }
+</script>
+<script>
+  window.addEventListener("DOMContentLoaded", () => {
+    const soporteVoz = !!(window.SpeechRecognition || window.webkitSpeechRecognition);
+    const botonDictado = document.getElementById("boton-dictado");
+
+    if (soporteVoz) {
+      // Oculta el botón si el navegador soporta reconocimiento automático
+      botonDictado.style.display = "none";
+    }
+  });
+</script>
+<!-- Input oculto para dictado -->
+<input id="dictadoManual" type="text" placeholder="Habla tu comando..." 
+style="opacity: 10; position: absolute; left: -9999px;" 
+oninput="interpretarComando(this.value)">
+<script>
   let recognition; // hacerlo global para poder detenerlo
 
   const comandosVoz = {
