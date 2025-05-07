@@ -886,6 +886,52 @@ button:hover {
 }
 
   </style>
+
+<script>
+  const comandosVoz = {
+    "comenzar lectura": () => document.getElementById("boton-comenzar")?.click(),
+    "modo virtual": () => elegirSesion("virtual"),
+    "modo presencial": () => elegirSesion("presencial"),
+    "cruz celta": () => seleccionarModo("cruz celta"),
+    "modo clasico": () => seleccionarModo("clasico"),
+    "modo all": () => seleccionarModo("all"),
+    "silenciar audio": () => {
+      if (!window.audioMuted) toggleMute();
+    },
+    "activar audio": () => {
+      if (window.audioMuted) toggleMute();
+    },
+    "volver al inicio": () => volverAlInicio(),
+  };
+
+  window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+  if (window.SpeechRecognition) {
+    const recognition = new SpeechRecognition();
+    recognition.lang = 'es-ES';
+    recognition.continuous = true;
+    recognition.interimResults = false;
+
+    recognition.onresult = (event) => {
+      const transcript = event.results[event.results.length - 1][0].transcript.trim().toLowerCase();
+      console.log("🎙️ Comando detectado:", transcript);
+      for (let comando in comandosVoz) {
+        if (transcript.includes(comando)) {
+          comandosVoz[comando]();
+          break;
+        }
+      }
+    };
+
+    recognition.onerror = (e) => console.warn("❌ Error reconocimiento de voz:", e.error);
+
+    recognition.start();
+    console.log("🎤 Reconocimiento de voz activado");
+  } else {
+    console.warn("⚠️ Reconocimiento de voz no soportado en este navegador.");
+  }
+</script>
+
   
   </body>
 </html>
