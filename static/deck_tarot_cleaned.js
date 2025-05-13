@@ -673,13 +673,13 @@ const posiciones = [
   { x: 0, y: 0 },                              // 1. Presente
   { x: 0, y: 0, cruzada: true },               // 2. Obstáculo (horizontal cruzada sobre 1)
   { x: 0, y: 100 * scale },                    // 3. Raíz
-  { x: -100 * scale, y: 0 },                   // 4. Pasado reciente
-  { x: 50 * scale, y: 0 },                    // 5. Por llegar
+  { x: -20 * scale, y: 0 },                   // 4. Pasado reciente
+  { x: 20 * scale, y: 0 },                    // 5. Por llegar
   { x: 0, y: -100 * scale },                   // 6. Futuro cercano
-  { x: 100 * scale, y: -100 * scale },         // 7. Consultante
-  { x: 100 * scale, y: -50 * scale },          // 8. Entorno
-  { x: 100 * scale, y: 0 },                    // 9. Esperanzas y miedos
-  { x: 100 * scale, y: 50 * scale }            // 10. Resultado final
+  { x: 60 * scale, y: -100 * scale },         // 7. Consultante
+  { x: 60 * scale, y: -50 * scale },          // 8. Entorno
+  { x: 60 * scale, y: 0 },                    // 9. Esperanzas y miedos
+  { x: 60 * scale, y: 50 * scale }            // 10. Resultado final
 ];
 
 
