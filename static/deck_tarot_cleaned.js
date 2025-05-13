@@ -668,39 +668,44 @@ var Deck = (function () {
         const cardsToShow = 10;
         __fontSize = fontSize();
   
-        const posiciones = [
-          { x: 0, y: 0 },           // 1. Presente
-          { x: 30, y: 0 },          // 2. Obstáculo (cruzada sobre la 1)
-          { x: 0, y: 100 },         // 3. Raíz
-          { x: -100, y: 0 },        // 4. Pasado reciente
-          { x: 100, y: 0 },         // 5. Lo que está por llegar
-          { x: 0, y: -100 },        // 6. Futuro cercano
-          { x: 200, y: -100 },      // 7. Consultante
-          { x: 200, y: -50 },       // 8. Entorno
-          { x: 200, y: 0 },         // 9. Esperanzas y miedos
-          { x: 200, y: 50 }         // 10. Resultado final
-        ];
+        const scale = 2.5;
+const posiciones = [
+  { x: 0, y: 0 },                              // 1. Presente
+  { x: 0, y: 0, cruzada: true },               // 2. Obstáculo (horizontal cruzada sobre 1)
+  { x: 0, y: 100 * scale },                    // 3. Raíz
+  { x: -100 * scale, y: 0 },                   // 4. Pasado reciente
+  { x: 100 * scale, y: 0 },                    // 5. Por llegar
+  { x: 0, y: -100 * scale },                   // 6. Futuro cercano
+  { x: 200 * scale, y: -120 * scale },         // 7. Consultante
+  { x: 200 * scale, y: -20 * scale },          // 8. Entorno
+  { x: 200 * scale, y: 30 },                    // 9. Esperanzas y miedos
+  { x: 200 * scale, y: 90 * scale }            // 10. Resultado final
+];
+
+
+        
   
-        cards.slice(-cardsToShow).forEach(function (card, i) {
-          const offsetX = posiciones[i].x * (__fontSize / 16);
-          const offsetY = posiciones[i].y * (__fontSize / 16);
-  
-          card.setSide('front');
-  
-          card.animateTo({
-            delay: i * 200,
-            duration: 400,
-            x: offsetX,
-            y: offsetY,
-            rot: 0,
-            onStart: function () {
-              card.$el.style.zIndex = 100 + i;
-            },
-            onComplete: function () {
-              if (i === cardsToShow - 1) next();
-            }
-          });
-        });
+cards.slice(-cardsToShow).forEach(function (card, i) {
+  const offsetX = posiciones[i].x * (__fontSize / 16);
+  const offsetY = posiciones[i].y * (__fontSize / 16);
+  const rotacion = (i === 1) ? 90 : 0; // rotar solo la carta 2
+
+  card.setSide('front');
+
+  card.animateTo({
+    delay: i * 200,
+    duration: 400,
+    x: offsetX,
+    y: offsetY,
+    rot: rotacion,
+    onStart: function () {
+      card.$el.style.zIndex = 100 + i;
+    },
+    onComplete: function () {
+      if (i === cardsToShow - 1) next();
+    }
+  });
+});
       }
     },
   
