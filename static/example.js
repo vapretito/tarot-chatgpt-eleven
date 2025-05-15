@@ -222,17 +222,17 @@ deck.sort()
 
 var randomDelay = 10000 + 30000 * Math.random()
 
-setTimeout(function () {
-  printMessage('Psst..I want to share a secret with you...')
-}, randomDelay)
+// setTimeout(function () {
+//   printMessage('Psst..I want to share a secret with you...')
+// }, randomDelay)
 
-setTimeout(function () {
-  printMessage('...try clicking all kings and nothing in between...')
-}, randomDelay + 5000)
+// setTimeout(function () {
+//   printMessage('...try clicking all kings and nothing in between...')
+// }, randomDelay + 5000)
 
-setTimeout(function () {
-  printMessage('...have fun ;)')
-}, randomDelay + 10000)
+// setTimeout(function () {
+//   printMessage('...have fun ;)')
+// }, randomDelay + 10000)
 
 function printMessage (text) {
   var animationFrames = Deck.animationFrames

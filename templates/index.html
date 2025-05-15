@@ -338,6 +338,11 @@ function cerrarModal() {
       <button id="boton-comenzar" onclick="cerrarModal()" style="display: none; margin-top: 25px; background: #8b5c2d; color: #fff; border: none; padding: 10px 24px; border-radius: 8px; font-size: 16px; cursor: pointer; box-shadow: 0 4px 8px rgba(0,0,0,0.3); transition: background 0.3s ease;" onmouseover="this.style.background='#a56a3a'" onmouseout="this.style.background='#8b5c2d'">
         ✨ Comenzar
       </button>
+      <div style="margin-top: 25px;">
+        <input type="email" id="input-email" placeholder="Tu correo (opcional para recibir el PDF)" 
+          style="padding: 10px; width: 100%; font-size: 16px; border-radius: 6px; border: 1px solid #ccc; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+      </div>
+      
       <div id="mensaje-mistico" style="margin-top: 15px; font-style: italic; color: #6a0dad; animation: parpadeo 1s infinite;">
         🧙‍♀️ “...”
       </div>
@@ -827,42 +832,53 @@ Tómate tu tiempo. El mensaje ya está en camino...`
   });
 </script>
 <script>
-  async function obtenerLecturaDesdeChatGPT(texto, idioma, nombre) {
-    const response = await fetch("/respuesta", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({ texto, idioma, nombre })
-    });
-  
-    if (!response.ok) {
-      console.error("❌ Error al obtener respuesta:", await response.text());
-      return;
-    }
-  
-    const blob = await response.blob();
-    const audioURL = URL.createObjectURL(blob);
-  
-    const audio = new Audio(audioURL);
-    audio.id = "audio-chatgpt";
-    document.body.appendChild(audio); // para que esté en el DOM si querés
-    audio.volume = 0.9;
-  
-    // 💫 Activamos el visualizador místico
-    audio.addEventListener("play", () => {
-      iniciarVisualizadorAudio(audio.id);
-    });
-  
-    audio.addEventListener("ended", () => {
-      document.getElementById("audio-visualizer").style.display = "none";
-      audio.remove(); // limpieza opcional
-    });
-  
-    audio.play().catch((err) => {
-      console.warn("🎙️ Error al reproducir audio:", err);
-    });
+  async function obtenerLecturaDesdeChatGPT(texto, idioma, nombre, email = null, cartas = []) {
+  const payload = {
+    texto,
+    idioma,
+    nombre,
+    cartas
+  };
+
+  if (email) {
+    payload.email = email;
   }
+
+  const response = await fetch("/respuesta", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify(payload)
+  });
+
+  if (!response.ok) {
+    console.error("❌ Error al obtener respuesta:", await response.text());
+    return;
+  }
+
+  const blob = await response.blob();
+  const audioURL = URL.createObjectURL(blob);
+
+  const audio = new Audio(audioURL);
+  audio.id = "audio-chatgpt";
+  document.body.appendChild(audio);
+  audio.volume = 0.9;
+
+  audio.addEventListener("play", () => {
+    iniciarVisualizadorAudio(audio.id);
+  });
+
+  audio.addEventListener("ended", () => {
+    document.getElementById("audio-visualizer").style.display = "none";
+    audio.remove();
+  });
+
+  audio.play().catch((err) => {
+    console.warn("🎙️ Error al reproducir audio:", err);
+  });
+}
+
   </script>
   <script>
     function volverAInstrucciones() {
@@ -1022,8 +1038,100 @@ oninput="interpretarComando(this.value)">
     iniciarReconocimientoVoz(); // iniciar al cargar
   });
 </script>
-
-
+<!-- <script>
   
+  function generarLecturaTarot() {
+  const datos = window.datosLectura;
+
+  if (!datos || !datos.texto || !datos.cartas || datos.cartas.length !== 3) {
+    alert("Por favor, selecciona 3 cartas antes de obtener la lectura.");
+    return;
+  }
+
+  console.log("📨 Enviando datos finales:", datos);
+
+  fetch("/respuesta", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(datos)
+  })
+  .then(res => res.blob())
+  .then(blob => {
+    const audio = new Audio(URL.createObjectURL(blob));
+    audio.id = "audio-chatgpt";
+    document.body.appendChild(audio);
+    audio.volume = 0.9;
+
+    audio.addEventListener("play", () => iniciarVisualizadorAudio(audio.id));
+    audio.addEventListener("ended", () => {
+      document.getElementById("audio-visualizer").style.display = "none";
+      audio.remove();
+    });
+
+    audio.play().catch(err => console.error("🎧 Error al reproducir audio:", err));
+  })
+  .catch(err => console.error("🎙️ Error al obtener audio:", err));
+}
+
+
+
+</script> -->
+<script>
+  function enviarPDFManual() {
+  const email = document.getElementById("input-email")?.value?.trim();
+  const nombre = window.nombreUsuario || "Consultante";
+
+  if (!email) {
+    alert("Por favor, ingresa un correo para enviar la lectura.");
+    return;
+  }
+
+  fetch("/enviar_pdf", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, nombre })
+  })
+  .then(res => res.json())
+  .then(data => {
+    if (data.success) {
+      alert("📩 PDF enviado con éxito");
+    } else {
+      alert("❌ Error al enviar PDF: " + data.error);
+    }
+  })
+  .catch(err => {
+    console.error("❌ Error al enviar PDF:", err);
+    alert("❌ Hubo un problema al enviar la lectura, intentalo en unos minutos");
+  });
+}
+
+</script>
+<button onclick="enviarPDFManual()" id="btn-enviar-pdf" style="
+margin-top: 80px;
+background: #4CAF50;
+color: white;
+padding: 12px 24px;
+font-size: 16px;
+border: none;
+border-radius: 8px;
+cursor: pointer;
+box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+">>
+  📩 Enviar lectura por correo
+</button>
+<!-- <button onclick="generarLecturaTarot()" style="
+  margin-top: 20px;
+  background: #4CAF50;
+  color: white;
+  padding: 12px 24px;
+  font-size: 16px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+">
+🔮 Obtener Lectura y Audio
+</button> -->
+
   </body>
 </html>

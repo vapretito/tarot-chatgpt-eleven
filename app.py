@@ -8,6 +8,8 @@ from reportlab.platypus import BaseDocTemplate, PageTemplate, Frame, Paragraph, 
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.lib.colors import HexColor
 from reportlab.platypus import Image  # ya lo tienes
+import smtplib
+from email.message import EmailMessage
 
 
 
@@ -97,12 +99,26 @@ def respuesta():
         ]
     )
     texto = chat_response.choices[0].message.content
+    
 
     # 🧾 Generar PDF
     cartas = data.get("cartas", [])
     buffer = create_mystic_pdf(texto, nombre, cartas)
+    email_destinatario = data.get("email", "").strip()  # ahora con fallback
+    try:
+       if email_destinatario:
+        print("📧 Enviando PDF a:", email_destinatario)
+        enviar_pdf_por_correo(email_destinatario, buffer)
+    except Exception as e:
+        print("❌ Error al enviar PDF por correo:", e)
 
-    with open("static/lectura.pdf", "wb") as f:
+
+    safe_name = nombre.lower().replace(" ", "_")
+    nombre_pdf = f"lectura_{safe_name}.pdf"
+
+
+
+    with open(f"static/{nombre_pdf}", "wb") as f:
         f.write(buffer.getvalue())
 
     # 🎧 ElevenLabs TTS
@@ -130,6 +146,59 @@ def respuesta():
         return {"error": "Failed to generate audio", "detail": tts_response.text}, 500
 
     return send_file(io.BytesIO(tts_response.content), mimetype="audio/mpeg")
+def enviar_pdf_por_correo(destinatario, buffer_pdf, nombre_archivo="lectura.pdf"):
+    remitente = "titomanbarreto@gmail.com"
+    contraseña = "gefz hhfl fpok skcd"  # Se recomienda usar contraseña de aplicación (no la principal)
+    
+    mensaje = EmailMessage()
+    mensaje['Subject'] = '✨ Tu Lectura de Tarot'
+    mensaje['From'] = remitente
+    mensaje['To'] = destinatario
+    mensaje.set_content("Aquí tienes tu lectura mística del tarot en formato PDF. ✨")
+
+    # Adjuntar PDF desde buffer
+    mensaje.add_attachment(
+        buffer_pdf.getvalue(),
+        maintype='application',
+        subtype='pdf',
+        filename=nombre_archivo
+    )
+
+    with smtplib.SMTP_SSL('smtp.gmail.com', 465) as smtp:
+        smtp.login(remitente, contraseña)
+        smtp.send_message(mensaje)
+
+
+@app.route("/enviar_pdf", methods=["POST"])
+def enviar_pdf_manual():
+    data = request.json
+    email = data.get("email", "").strip()
+    nombre = data.get("nombre", "Consultante").strip()
+    if not email:
+        return {"error": "No se especificó un correo"}, 400
+
+    safe_name = nombre.lower().replace(" ", "_")
+    nombre_pdf = f"lectura_{safe_name}.pdf"
+    pdf_path = f"static/{nombre_pdf}"
+
+    try:
+        with open(pdf_path, "rb") as f:
+            buffer = io.BytesIO(f.read())
+        enviar_pdf_por_correo(email, buffer, nombre_pdf)
+        return {"success": True}
+    except FileNotFoundError:
+        return {"error": "PDF no encontrado"}, 404
+
+
+@app.route("/test-correo")
+def test_correo():
+    with open("static/lectura.pdf", "rb") as f:
+        buffer = io.BytesIO(f.read())
+    try:
+        enviar_pdf_por_correo("vbarreto15@gmail.com", buffer)
+        return "✅ Correo enviado"
+    except Exception as e:
+        return f"❌ Error: {e}"
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000)
